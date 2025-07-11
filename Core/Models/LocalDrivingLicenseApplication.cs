@@ -1,12 +1,18 @@
-﻿using System;
+﻿using Core.Interfaces;
+using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 
 namespace DataAccessLayer;
 
-public partial class LocalDrivingLicenseApplication
+public partial class LocalDrivingLicenseApplication:IEntity
 {
     public int LocalDrivingLicenseApplicationID { get; set; }
-
+    int IEntity.ID
+    {
+        get => LocalDrivingLicenseApplicationID;
+        set => LocalDrivingLicenseApplicationID = value;
+    }
     public int ApplicationID { get; set; }
 
     public int LicenseClassID { get; set; }

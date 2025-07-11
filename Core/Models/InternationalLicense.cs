@@ -1,12 +1,18 @@
-﻿using System;
+﻿using Core.Interfaces;
+using System;
 using System.Collections.Generic;
 
 namespace DataAccessLayer;
 
-public partial class InternationalLicense
+public partial class InternationalLicense:IEntity
 {
     public int InternationalLicenseID { get; set; }
 
+    int IEntity.ID
+    {
+        get => InternationalLicenseID;
+        set => InternationalLicenseID = value;
+    }
     public int ApplicationID { get; set; }
 
     public int DriverID { get; set; }

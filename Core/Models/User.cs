@@ -1,12 +1,17 @@
-﻿using System;
+﻿using Core.Interfaces;
+using System;
 using System.Collections.Generic;
 
 namespace DataAccessLayer;
 
-public partial class User
+public partial class User:IEntity
 {
     public int UserID { get; set; }
-
+    int IEntity.ID
+    {
+        get => UserID;
+        set => UserID = value;
+    }
     public int PersonID { get; set; }
 
     public string UserName { get; set; } = null!;

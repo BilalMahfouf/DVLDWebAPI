@@ -1,12 +1,18 @@
-﻿using System;
+﻿using Core.Interfaces;
+using System;
 using System.Collections.Generic;
 
 namespace DataAccessLayer;
 
-public partial class Driver
+public partial class Driver:IEntity
 {
     public int DriverID { get; set; }
 
+    int IEntity.ID
+    {
+        get => DriverID;
+        set => DriverID = value;
+    }
     public int PersonID { get; set; }
 
     public int CreatedByUserID { get; set; }

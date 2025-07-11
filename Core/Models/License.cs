@@ -1,12 +1,17 @@
-﻿using System;
+﻿using Core.Interfaces;
+using System;
 using System.Collections.Generic;
 
 namespace DataAccessLayer;
 
-public partial class License
+public partial class License:IEntity
 {
     public int LicenseID { get; set; }
-
+    int IEntity.ID
+    {
+        get => LicenseID;
+        set => LicenseID = value;
+    }
     public int ApplicationID { get; set; }
 
     public int DriverID { get; set; }

@@ -1,12 +1,18 @@
-﻿using System;
+﻿using Core.Interfaces;
+using System;
 using System.Collections.Generic;
 
 namespace DataAccessLayer;
 
-public partial class DetainedLicense
+public partial class DetainedLicense:IEntity
 {
     public int DetainID { get; set; }
 
+    int IEntity.ID
+    {
+        get => DetainID;
+        set => DetainID = value;
+    }
     public int LicenseID { get; set; }
 
     public DateTime DetainDate { get; set; }

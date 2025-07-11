@@ -1,12 +1,17 @@
-﻿using System;
+﻿using Core.Interfaces;
+using System;
 using System.Collections.Generic;
 
 namespace DataAccessLayer;
 
-public partial class TestAppointment
+public partial class TestAppointment:IEntity
 {
     public int TestAppointmentID { get; set; }
-
+    int IEntity.ID
+    {
+        get => TestAppointmentID;
+        set => TestAppointmentID = value;
+    }
     public int TestTypeID { get; set; }
 
     public int LocalDrivingLicenseApplicationID { get; set; }
