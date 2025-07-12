@@ -28,6 +28,11 @@ namespace Core.Common
             NewInternationalLicense=6,
             RetakeTest=7
         };
-
+        public enum ApplicationStatusEnum { New=1,Canceled=2,Completed=3};
+        public enum IssueReason
+        {
+        FirstTime=1, Renew= 2, ReplacementForDamaged=3,  ReplacementForLost=4
+        }
+       
     }
 }
