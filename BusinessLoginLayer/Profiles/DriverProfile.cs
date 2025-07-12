@@ -1,6 +1,4 @@
 ﻿using AutoMapper;
-using Core.DTOs.Test;
-using DataAccessLayer;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,11 +7,11 @@ using System.Threading.Tasks;
 
 namespace BusinessLoginLayer.Profiles
 {
-    public class TestAppointmentProfile:Profile
+    public class DriverProfile:Profile
     {
-      public TestAppointmentProfile()
+        public DriverProfile()
         {
-            CreateMap<TestAppointment, TestAppointmentDTO>()
+            CreateMap<DataAccessLayer.Driver, Core.DTOs.Driver.DriverDTO>()
                 .ReverseMap();
         }
     }

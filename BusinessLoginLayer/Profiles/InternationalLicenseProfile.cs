@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using BusinessLoginLayer.DTOs.License;
+using Core.DTOs.License;
 using DataAccessLayer;
 
 namespace BusinessLoginLayer.Profiles

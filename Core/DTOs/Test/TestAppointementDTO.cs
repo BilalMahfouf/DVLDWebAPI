@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BusinessLoginLayer.DTOs.Test
+namespace Core.DTOs.Test
 {
     public class TestAppointmentDTO
     {

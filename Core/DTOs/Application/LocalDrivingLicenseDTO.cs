@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BusinessLoginLayer.DTOs.Application
+namespace Core.DTOs.Application
 {
     public class LocalDrivingLicenseDTO
     {

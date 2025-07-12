@@ -1,4 +1,4 @@
-﻿using BusinessLoginLayer.DTOs.Person;
+﻿using Core.DTOs.Person;
 using Core.Interfaces;
 using Microsoft.EntityFrameworkCore.Metadata.Conventions;
 using System;
@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BusinessLoginLayer.DTOs.User
+namespace Core.DTOs.User
 {
     public class ReadUserDTO
     {

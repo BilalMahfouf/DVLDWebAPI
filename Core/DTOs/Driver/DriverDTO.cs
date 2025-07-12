@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BusinessLoginLayer.DTOs.Driver
+namespace Core.DTOs.Driver
 {
     public class DriverDTO
     {

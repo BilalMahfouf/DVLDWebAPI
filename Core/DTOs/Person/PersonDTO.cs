@@ -1,11 +1,11 @@
-﻿using BusinessLoginLayer.DTOs.Country;
+﻿using Core.DTOs.Country;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BusinessLoginLayer.DTOs.Person
+namespace Core.DTOs.Person
 {
     public class PersonDTO
     {

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BusinessLoginLayer.DTOs.Application.ApplicationType
+namespace Core.DTOs.Application.ApplicationType
 {
     public class ApplicationTypeDTO
     {

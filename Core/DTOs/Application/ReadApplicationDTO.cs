@@ -1,6 +1,6 @@
-﻿using BusinessLoginLayer.DTOs.Application.ApplicationType;
-using BusinessLoginLayer.DTOs.Person;
-using BusinessLoginLayer.DTOs.User;
+﻿using Core.DTOs.Application.ApplicationType;
+using Core.DTOs.Person;
+using Core.DTOs.User;
 using Core.Common;
 using Core.Interfaces;
 using System;
@@ -9,7 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BusinessLoginLayer.DTOs.Application
+namespace Core.DTOs.Application
 {
     public class ReadApplicationDTO
     {

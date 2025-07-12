@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using BusinessLoginLayer.DTOs.User;
+using Core.DTOs.User;
 using DataAccessLayer;
 using System;
 using System.Collections.Generic;
