@@ -1,4 +1,5 @@
-﻿using Core.Interfaces.Repositories.Common;
+﻿using Core.Interfaces;
+using Core.Interfaces.Repositories.Common;
 using DataAccessLayer.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Identity.Client;
@@ -11,7 +12,7 @@ using System.Threading.Tasks;
 namespace DataAccessLayer.Repositories.Common
 {
     public  class ReadUpdateRepository<TEntity> : IReadUpdateRepository<TEntity>
-        where TEntity : class
+        where TEntity : class,IEntity
     {
         protected readonly DvldDBContext _context;
         protected readonly DbSet<TEntity> _dbSet;
@@ -46,6 +47,10 @@ namespace DataAccessLayer.Repositories.Common
             }
             return result;
             
+        }
+        public virtual async Task<TEntity?> FindByIDAsync(int ID)
+        {
+            return await _dbSet.FirstOrDefaultAsync(e => e.ID == ID);
         }
     }
 }

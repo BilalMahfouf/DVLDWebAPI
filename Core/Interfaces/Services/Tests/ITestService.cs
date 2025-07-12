@@ -1,4 +1,5 @@
 ﻿using Core.Common;
+using Core.DTOs.Test;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,10 +8,10 @@ using System.Threading.Tasks;
 
 namespace Core.Interfaces.Services.Tests
 {
-    public interface ITestService<T> where T : class
+    public interface ITestService
     {
-        Task<T?> FindByIDAsync(int id);
-        Task<int> CreateTestAsync(T testDTO);
+        Task<TestDTO?> FindByIDAsync(int id);
+        Task<int> CreateTestAsync(TestDTO testDTO);
         Task<bool> DeleteTestAsync(int id);
         Task<int> GetTestFailedTrails(int id, Enums.LicenseClassTypeEnum
             licenseClassType);

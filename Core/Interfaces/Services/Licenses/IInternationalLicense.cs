@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Core.DTOs.License;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,13 +7,13 @@ using System.Threading.Tasks;
 
 namespace Core.Interfaces.Services.Licenses
 {
-    public interface IInternationalLicense< T> where T : class
+    public interface IInternationalLicense
     {
-        Task<int> IssueInternationalLicense(T licenseDTO);
-        Task<bool> UpdateInternationalLicenseAsync(T licenseDTO);
+        Task<int> IssueInternationalLicense(InternationalLicenseDTO licenseDTO);
+        Task<bool> UpdateInternationalLicenseAsync(InternationalLicenseDTO licenseDTO);
         Task<bool> DeleteInternationalLicenseAsync(int licenseID);
-        Task<T?> FindByIDAsync(int licenseID);
-        Task<IEnumerable<T>> GetAllAsync();
+        Task<InternationalLicenseDTO?> FindByIDAsync(int licenseID);
+        Task<IEnumerable<InternationalLicenseDTO>> GetAllAsync();
         Task<bool> ActivateAsync(int licenseID);
         Task<bool> DeActivateAsync(int licenseID);
 

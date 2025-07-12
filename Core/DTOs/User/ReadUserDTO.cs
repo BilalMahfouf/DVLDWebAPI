@@ -1,6 +1,6 @@
 ﻿using Core.DTOs.Person;
 using Core.Interfaces;
-using Microsoft.EntityFrameworkCore.Metadata.Conventions;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;

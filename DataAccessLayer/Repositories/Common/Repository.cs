@@ -59,9 +59,6 @@ namespace DataAccessLayer.Repositories.Common
             return result;
         }
 
-        public virtual async Task<TEntity?> FindByIDAsync(int ID)
-        {
-            return await _dbSet.FirstOrDefaultAsync(e => e.ID == ID);
-        }
+        
     }
 }

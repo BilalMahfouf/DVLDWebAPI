@@ -11,8 +11,9 @@ namespace Core.Interfaces.Repositories.People
 {
     public interface IPersonRepository : IRepository<Person>
     {
-        Task<bool> IsExist(string NationalNo);
-        Task<bool> IsExist(int ID);
+        Task<bool> IsExistAsync(string NationalNo);
+        Task<bool> IsExistAsync(int ID);
+        Task<Person?> FindByNationalNoAsync(string NationalNo);
 
     }
 }

@@ -11,7 +11,6 @@ namespace Core.Interfaces.Repositories.Common
     {
         Task<int> AddAsync(TEntity entity);
         Task<bool> DeleteAsync(int ID);
-        Task<TEntity?> FindByIDAsync(int ID);
 
     }
 }

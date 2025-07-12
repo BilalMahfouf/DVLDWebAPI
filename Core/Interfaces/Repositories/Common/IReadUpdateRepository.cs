@@ -10,5 +10,6 @@ namespace Core.Interfaces.Repositories.Common
     {
         Task<IEnumerable<TEntity>> GetAllAsync();
         Task<bool> UpdateAsync(TEntity entity);
+        Task<TEntity?> FindByIDAsync(int id);
     }
 }

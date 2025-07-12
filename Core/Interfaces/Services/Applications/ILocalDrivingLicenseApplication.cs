@@ -14,7 +14,7 @@ namespace Core.Interfaces.Services.Applications
         Task<bool> UpdateLDLApplicationAsync(int LDLapplicationID, LocalDrivingLicenseDTO LDLapplication);
         Task<bool> DeleteLDLApplicationAsync(int LDLapplicationID);
         Task<LocalDrivingLicenseDTO?> FindByIDAsync(int LDLapplicationID);
-        Task<IEnumerable<LocalDrivingLicenseDTO>> GetAllAsync();
+        Task<IEnumerable<LocalDrivingLicenseApplicationDashboardDTO>> GetAllAsync();
         Task<bool> CanCreateLDLApplication(int personID,
             Enums.LicenseClassTypeEnum licenseClassTypeID);
         
