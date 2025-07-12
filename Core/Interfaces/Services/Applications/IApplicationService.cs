@@ -13,7 +13,7 @@ namespace Core.Interfaces.Services.Applications
     Task<int> CreateApplicationAsync(ApplicationDTO application);
     Task<bool> UpdateApplicationAsync(int applicationID, ApplicationDTO application);
     Task<bool> DeleteApplicationAsync(int applicationID);
-    Task<ApplicationDTO?> FindByIDAsync(int applicationID);
+    Task<ReadApplicationDTO?> FindByIDAsync(int applicationID);
     Task<bool> CancelApplication(int  applicationID);
     Task<bool> CompleteApplicationAsync(int applicationID); 
 

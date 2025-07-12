@@ -1,4 +1,5 @@
 ﻿using Core.Common;
+using Core.DTOs.Application;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,13 +8,13 @@ using System.Threading.Tasks;
 
 namespace Core.Interfaces.Services.Applications
 {
-    public interface ILocalDrivingLicenseApplication<T> where T : class
+    public interface ILocalDrivingLicenseApplication
     {
-        Task<int> CreateLDLApplicationAsync(T LDLapplication);
-        Task<bool> UpdateLDLApplicationAsync(int LDLapplicationID, T LDLapplication);
+        Task<int> CreateLDLApplicationAsync(LocalDrivingLicenseDTO LDLapplication);
+        Task<bool> UpdateLDLApplicationAsync(int LDLapplicationID, LocalDrivingLicenseDTO LDLapplication);
         Task<bool> DeleteLDLApplicationAsync(int LDLapplicationID);
-        Task<T?> FindByIDAsync(int LDLapplicationID);
-        Task<IEnumerable<T>> GetAllAsync();
+        Task<LocalDrivingLicenseDTO?> FindByIDAsync(int LDLapplicationID);
+        Task<IEnumerable<LocalDrivingLicenseDTO>> GetAllAsync();
         Task<bool> CanCreateLDLApplication(int personID,
             Enums.LicenseClassTypeEnum licenseClassTypeID);
         

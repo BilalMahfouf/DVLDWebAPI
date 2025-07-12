@@ -1,4 +1,6 @@
 ﻿using AutoMapper;
+using Core.DTOs.Driver;
+using DataAccessLayer;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,6 +15,7 @@ namespace BusinessLoginLayer.Profiles
         {
             CreateMap<DataAccessLayer.Driver, Core.DTOs.Driver.DriverDTO>()
                 .ReverseMap();
+            CreateMap<Drivers_View, DriverDashboardDTO>();
         }
     }
 }

@@ -15,7 +15,10 @@ namespace BusinessLoginLayer.Profiles
                 .ForMember(d => d.DetainDate, opt => opt.Ignore())
                 .ForMember(d => d.CreatedByUserID, opt => opt.Ignore())
                 .ForMember(d => d.LicenseID, opt => opt.Ignore());
-        }
-    }   
 
+            CreateMap<DetainedLicenses_View, DetainedLicenseDashboardDTO>();
+
+        }
+
+    }
 }

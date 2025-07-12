@@ -15,6 +15,8 @@ namespace BusinessLoginLayer.Profiles
 
             CreateMap<LocalDrivingLicenseApplication, LocalDrivingLicenseDTO>()
                 .ReverseMap();
+            CreateMap<LocalDrivingLicenseApplications_View, LocalDrivingLicenseApplicationDashboardDTO>();
+                
         }
     }
 }
