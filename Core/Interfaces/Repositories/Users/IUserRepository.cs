@@ -6,10 +6,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Core.Interfaces.Repositories.Applications
+namespace Core.Interfaces.Repositories.Users
 {
-    public interface IApplicationRepository:IRepository<Application>
+    public interface IUserRepository:IRepository<User>
     {
-        Task<bool> IsExistAsync(int applicationID);
+        Task<bool> isExistByPersonID(int personID);
     }
 }

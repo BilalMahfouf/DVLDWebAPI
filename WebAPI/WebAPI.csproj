@@ -15,10 +15,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Controllers\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\BusinessLoginLayer\BusinessLoginLayer.csproj" />
     <ProjectReference Include="..\Core\Core.csproj" />
     <ProjectReference Include="..\DataAccessLayer\DataAccessLayer.csproj" />

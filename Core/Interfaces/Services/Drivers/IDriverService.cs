@@ -7,11 +7,11 @@ using System.Threading.Tasks;
 
 namespace Core.Interfaces.Services.Drivers
 {
-    public interface IDriverService<DriverDTO> where DriverDTO : class
+    public interface IDriverService
     {
-        Task<DriverDTO?> FindByIDAsync(int id);
+        Task<ReadDriverDTO?> FindByIDAsync(int id);
         Task<int> CreateDriverAsync(DriverDTO driverDTO);
         Task<IEnumerable<DriverDashboardDTO>> GetAllDriversAsync();
-
+        Task<bool> DeleteDriverAsync(int id);
     }
 }

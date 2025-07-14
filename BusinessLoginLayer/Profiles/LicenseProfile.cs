@@ -14,8 +14,13 @@ namespace BusinessLoginLayer.Profiles
     {
         public LicenseProfile()
         {
-            CreateMap<License, LicenseDTO>()
-                .ReverseMap();
+            CreateMap<LicenseDTO, License>()
+                .ForMember(l => l.IssueDate, opt => opt.Ignore())
+                .ForMember(l => l.ExpirationDate, opt => opt.Ignore())
+                .ForMember(l => l.IsActive, opt => opt.Ignore());
+
+            CreateMap<License, ReadLicenseDTO>();
+
         }
     }
 

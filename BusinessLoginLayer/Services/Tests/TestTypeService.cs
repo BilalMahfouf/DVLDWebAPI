@@ -8,7 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BusinessLoginLayer.Services
+namespace BusinessLoginLayer.Services.Tests
 {
     public class TestTypeService
     {

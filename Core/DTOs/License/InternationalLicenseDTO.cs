@@ -9,6 +9,20 @@ namespace Core.DTOs.License
 {
     public class InternationalLicenseDTO
     {
+        public int ApplicationID { get; set; }
+
+        public int DriverID { get; set; }
+
+        public int IssuedUsingLocalLicenseID { get; set; }
+
+        public int CreatedByUserID { get; set; }
+
+       
+        public InternationalLicenseDTO() { }
+    }
+
+    public class ReadInternationalLicenseDTO
+    {
         public int InternationalLicenseID { get; set; }
         public int ApplicationID { get; set; }
 
@@ -24,19 +38,8 @@ namespace Core.DTOs.License
 
         public int CreatedByUserID { get; set; }
 
-        public InternationalLicenseDTO(int internationalLicenseID, int applicationID
-            , int driverID, int issuedUsingLocalLicenseID, DateTime issueDate
-            , DateTime expirationDate, bool isActive, int createdByUserID)
-        {
-            InternationalLicenseID = internationalLicenseID;
-            ApplicationID = applicationID;
-            DriverID = driverID;
-            IssuedUsingLocalLicenseID = issuedUsingLocalLicenseID;
-            IssueDate = issueDate;
-            ExpirationDate = expirationDate;
-            IsActive = isActive;
-            CreatedByUserID = createdByUserID;
-        }
-        public InternationalLicenseDTO() { }
+       
+        public ReadInternationalLicenseDTO() { }
     }
+
 }

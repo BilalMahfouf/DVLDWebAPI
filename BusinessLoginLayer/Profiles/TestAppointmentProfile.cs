@@ -15,7 +15,7 @@ namespace BusinessLoginLayer.Profiles
         {
             CreateMap<TestAppointment, TestAppointmentDTO>()
                 .ReverseMap();
-            CreateMap<TestAppointments_View, TestAppointmentDashboardDTO>();
+            CreateMap<TestAppointments_View, TestAppointmentDTO>();
         }
     }
 }

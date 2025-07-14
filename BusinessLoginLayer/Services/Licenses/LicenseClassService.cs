@@ -8,7 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BusinessLoginLayer.Services
+namespace BusinessLoginLayer.Services.Licenses
 {
     public class LicenseClassService
     {
@@ -50,6 +50,27 @@ namespace BusinessLoginLayer.Services
             }
             licenseClass.ClassFees = fees;
             return await _repo.UpdateAsync(licenseClass);
+        }
+
+        public async Task<byte> GetLicenseValidityLengthAsync(int licenseClassID)
+        {
+            if (licenseClassID <= 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(licenseClassID)
+                    , "license class id must be greater then 0");
+            }
+            var licenseClass = await _repo.FindByIDAsync(licenseClassID);
+            if(licenseClass is null )
+            {
+                throw new InvalidOperationException(nameof(licenseClass));
+            }
+            if(licenseClass.DefaultValidityLength <=0)
+            {
+                throw new ArgumentOutOfRangeException
+                    (nameof(licenseClass.DefaultValidityLength));
+            }
+            return licenseClass.DefaultValidityLength;
+            
         }
     }
 }

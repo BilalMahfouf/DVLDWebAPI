@@ -11,10 +11,10 @@ namespace Core.Interfaces.Services.Tests
     {
         Task<TestAppointmentDTO?> FindByIDAsync(int id);
         Task<int> CreateTestAppointmentAsync(TestAppointmentDTO testAppointmentDTO);
-        Task<bool> UpdateTestAppointmentAsync(int id,TestAppointmentDTO testAppointmentDTO);
+        Task<bool> UpdateTestAppointmentAsync(int id,int retakeTestAppointmentID);
         Task<bool> DeleteTestAppointmentAsync(int id);
         Task<bool> LockTestAppointment(int id);
-        Task<IEnumerable<TestAppointmentDashboardDTO>> GetAllTestAppointmentAsync();
+        Task<IEnumerable<TestAppointmentDTO>> GetAllTestAppointmentAsync();
 
     }
 }

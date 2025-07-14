@@ -26,7 +26,7 @@ namespace DataAccessLayer.Repositories.Common
         public virtual  async Task<IEnumerable<TEntity>> GetAllAsync()
         {
             IQueryable<TEntity> query = _dbSet;
-            return await query.ToListAsync();
+            return await query.AsNoTracking().ToListAsync();
         }
 
         public async Task<bool> UpdateAsync(TEntity entity)

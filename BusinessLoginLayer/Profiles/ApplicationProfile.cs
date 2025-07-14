@@ -13,8 +13,15 @@ namespace BusinessLoginLayer.Profiles
     {
         public ApplicationProfile() {
 
-            CreateMap<ReadApplicationDTO, Application>().ReverseMap();
-        
+            CreateMap<ReadApplicationDTO, Application>();
+            CreateMap<ApplicationDTO, Application>()
+                .ForMember(a => a.ApplicationDate, opt => opt.Ignore())
+                .ForMember(a => a.LastStatusDate, opt => opt.Ignore())
+                .ForMember(a => a.ApplicationStatus, opt => opt.Ignore())
+                .ForMember(a => a.ApplicationTypeID, opt => opt.Ignore());
+
+
+
         }
     }
 }

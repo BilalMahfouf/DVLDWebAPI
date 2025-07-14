@@ -20,11 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Repositories\Application\" />
-    <Folder Include="Repositories\License\" />
-    <Folder Include="Repositories\User\" />
     <Folder Include="Repositories\Test\" />
-    <Folder Include="Repositories\Person\" />
   </ItemGroup>
 
   <ItemGroup>

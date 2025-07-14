@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Core.Interfaces.Services.Licenses
 {
-    public interface IDetainedLicenseService
+    public interface IDetainLicenseService
     {
         Task<IEnumerable<DetainLicenseDTO>> GetAllAsync();
         Task<DetainLicenseDTO?> FindAsync(int id);

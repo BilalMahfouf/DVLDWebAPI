@@ -7,8 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Interfaces\Repositories\Licenses\" />
-    <Folder Include="Interfaces\Repositories\Users\" />
+    <Folder Include="Interfaces\Repositories\Tests\" />
     <Folder Include="Models\" />
   </ItemGroup>
 

@@ -10,10 +10,9 @@ namespace Core.Interfaces.Services.Licenses
     public interface IInternationalLicense
     {
         Task<int> IssueInternationalLicense(InternationalLicenseDTO licenseDTO);
-        Task<bool> UpdateInternationalLicenseAsync(InternationalLicenseDTO licenseDTO);
         Task<bool> DeleteInternationalLicenseAsync(int licenseID);
-        Task<InternationalLicenseDTO?> FindByIDAsync(int licenseID);
-        Task<IEnumerable<InternationalLicenseDTO>> GetAllAsync();
+        Task<ReadInternationalLicenseDTO?> FindByIDAsync(int licenseID);
+        Task<IEnumerable<ReadInternationalLicenseDTO>> GetAllAsync();
         Task<bool> ActivateAsync(int licenseID);
         Task<bool> DeActivateAsync(int licenseID);
 

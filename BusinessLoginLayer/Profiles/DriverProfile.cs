@@ -13,8 +13,9 @@ namespace BusinessLoginLayer.Profiles
     {
         public DriverProfile()
         {
-            CreateMap<DataAccessLayer.Driver, Core.DTOs.Driver.DriverDTO>()
-                .ReverseMap();
+            CreateMap<Driver, ReadDriverDTO>();
+            CreateMap<ReadDriverDTO, Driver>()
+                .ForMember(d => d.CreatedDate, opt => opt.Ignore());
             CreateMap<Drivers_View, DriverDashboardDTO>();
         }
     }

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Core.DTOs.Test
 {
-    public class TestAppointmentDashboardDTO
+    public class TestAppointmentDahsboardDTO
     {
         public int TestAppointmentID { get; set; }
 
@@ -23,6 +23,6 @@ namespace Core.DTOs.Test
         public string FullName { get; set; } = null!;
 
         public bool IsLocked { get; set; }
-        public TestAppointmentDashboardDTO() { }
+        public TestAppointmentDahsboardDTO() { }
     }
 }

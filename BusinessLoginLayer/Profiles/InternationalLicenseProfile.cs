@@ -8,8 +8,16 @@ namespace BusinessLoginLayer.Profiles
     {
         public InternationalLicenseProfile()
         {
-            CreateMap<InternationalLicense, InternationalLicenseDTO>()
-                .ReverseMap();
+            CreateMap<InternationalLicenseDTO, InternationalLicense>()
+                .ForMember(i => i.InternationalLicenseID, opt => opt.Ignore())
+                .ForMember(i => i.IssueDate, opt => opt.Ignore())
+                .ForMember(i => i.ExpirationDate, opt => opt.Ignore())
+                .ForMember(i => i.IsActive, opt => opt.Ignore());
+
+            CreateMap<InternationalLicense, ReadInternationalLicenseDTO>();
+
+
+
         }
     }
 

@@ -8,15 +8,14 @@ using System.Threading.Tasks;
 
 namespace Core.Interfaces.Services.Applications
 {
-    public interface ILocalDrivingLicenseApplication
+    public interface ILocalDrivingLicenseApplicationService
     {
         Task<int> CreateLDLApplicationAsync(LocalDrivingLicenseDTO LDLapplication);
-        Task<bool> UpdateLDLApplicationAsync(int LDLapplicationID, LocalDrivingLicenseDTO LDLapplication);
         Task<bool> DeleteLDLApplicationAsync(int LDLapplicationID);
-        Task<LocalDrivingLicenseDTO?> FindByIDAsync(int LDLapplicationID);
+        Task<LocalDrivingLicenseDTO?> FindLDLAppByIDAsync(int LDLapplicationID);
         Task<IEnumerable<LocalDrivingLicenseApplicationDashboardDTO>> GetAllAsync();
         Task<bool> CanCreateLDLApplication(int personID,
-            Enums.LicenseClassTypeEnum licenseClassTypeID);
+            Enums.LicenseClassTypeEnum licenseClassID);
         
     }
 }
