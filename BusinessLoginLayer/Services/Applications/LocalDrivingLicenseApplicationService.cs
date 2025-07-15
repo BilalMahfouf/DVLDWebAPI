@@ -20,7 +20,6 @@ namespace BusinessLoginLayer.Services.Applications
         private readonly IApplicationService _applicationService;
         public LocalDrivingLicenseApplicationService(IMapper mapper
             , ILocalDrivingLicenseApplicationRepository localDLAppRepository
-            , IApplicationRepository applicationRepository
             ,IApplicationService applicationService)
 
         {

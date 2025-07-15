@@ -19,12 +19,14 @@ namespace BusinessLoginLayer.Services.Licenses
         private readonly IRepository<DetainedLicense> _detainedLicenseRepository;
         private readonly IApplicationService _applicationService;
         private readonly IMapper _mapper;
+        private readonly ILicenseService _licenseService;
 
-        public DetainLicenseService(IRepository<DetainedLicense> detainLicenseRepositry, IApplicationService applicationService, IMapper mapper)
+        public DetainLicenseService(IRepository<DetainedLicense> detainLicenseRepositry, IApplicationService applicationService, IMapper mapper, ILicenseService licenseService)
         {
             _detainedLicenseRepository = detainLicenseRepositry;
             _applicationService = applicationService;
             _mapper = mapper;
+            _licenseService = licenseService;
         }
 
         public async Task<int> CreateDetainedLicenseAsync(DetainLicenseDTO detainedLicenseDTO)
@@ -33,8 +35,14 @@ namespace BusinessLoginLayer.Services.Licenses
             {
                 throw new ArgumentNullException(nameof(detainedLicenseDTO));
             }
+            if(await _licenseService.IsLicenseExistAndActiveAsync(detainedLicenseDTO.LicenseID) is false)
+            {
+                throw new ArgumentException(nameof(detainedLicenseDTO.LicenseID));
+            }
+            
             var detainedLicense = _mapper.Map<DetainedLicense>(detainedLicenseDTO);
             detainedLicense.IsReleased = false;
+            detainedLicense.DetainDate = DateTime.UtcNow;
             return await _detainedLicenseRepository.AddAsync(detainedLicense);
         }
 

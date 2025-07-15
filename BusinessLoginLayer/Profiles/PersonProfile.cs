@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Core.DTOs.Country;
 using Core.DTOs.Person;
 using DataAccessLayer;
 using System;
@@ -15,6 +16,7 @@ namespace BusinessLoginLayer.Profiles
         {
             CreateMap<Person, ReadPersonDTO>();
             CreateMap<PersonDTO, Person>();
+            CreateMap<Country, ReadCountryDTO>();
         
         }
     }

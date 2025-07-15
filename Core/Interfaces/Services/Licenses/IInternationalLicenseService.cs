@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Core.Interfaces.Services.Licenses
 {
-    public interface IInternationalLicense
+    public interface IInternationalLicenseService
     {
         Task<int> IssueInternationalLicense(InternationalLicenseDTO licenseDTO);
         Task<bool> DeleteInternationalLicenseAsync(int licenseID);

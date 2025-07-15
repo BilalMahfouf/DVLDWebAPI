@@ -15,9 +15,9 @@ namespace DataAccessLayer.Repositories.Application
         public ApplicationRepository(DvldDBContext context) : base(context)
         {
         }
-        public Task<bool> IsExistAsync(int applicationID)
+        public async Task<bool> IsExistAsync(int applicationID)
         {
-            return _context.Applications.AnyAsync(a => a.ApplicationID == applicationID);
+            return await _context.Applications.AnyAsync(a => a.ApplicationID == applicationID);
         }
     }
 }

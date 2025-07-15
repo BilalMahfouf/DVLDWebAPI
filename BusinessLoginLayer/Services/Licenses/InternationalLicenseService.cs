@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace BusinessLoginLayer.Services.Licenses
 {
-    public class InternationalLicenseService : IInternationalLicense
+    public class InternationalLicenseService : IInternationalLicenseService
     {
         private readonly IRepository<InternationalLicense> _internationalLicenseRepository;
         private readonly ILicenseService _licenseService;
