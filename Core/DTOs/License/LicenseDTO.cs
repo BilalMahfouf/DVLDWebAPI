@@ -10,7 +10,6 @@ namespace Core.DTOs.License
 {
     public class LicenseDTO
     {
-        public int LicenseID { get; set; }
         public int ApplicationID { get; set; }
 
         public int DriverID { get; set; }
@@ -20,11 +19,6 @@ namespace Core.DTOs.License
         public string? Notes { get; set; }
 
         public decimal PaidFees { get; set; }
-
-        /// <summary>
-        /// 1-FirstTime, 2-Renew, 3-Replacement for Damaged, 4- Replacement for Lost.
-        /// </summary>
-        public Enums.IssueReason IssueReason { get; set; }
 
         public int CreatedByUserID { get; set; }
 

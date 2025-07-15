@@ -5,6 +5,7 @@ using Core.Interfaces.Repositories.Licenses;
 using Core.Interfaces.Services.Applications;
 using Core.Interfaces.Services.Licenses;
 using DataAccessLayer;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -88,22 +89,21 @@ namespace BusinessLoginLayer.Services.Licenses
         {
            return await _licenseRepository.IsLicenseActiveAsync(id);
         }
-
-        public async Task<int> IssueDrivingLicense(LicenseDTO licenseDTO,
-            Enums.IssueReason issueReason = Enums.IssueReason.FirstTime)
+        private async Task<int>  _CreateLicenseAsync(LicenseDTO licenseDTO,
+            Enums.IssueReason issueReason=Enums.IssueReason.FirstTime)
         {
-           if(licenseDTO is null)
+            if (licenseDTO is null)
             {
                 throw new ArgumentNullException(nameof(licenseDTO), "License DTO cannot be null.");
             }
-           if(!(await _applicationService.IsExistAsync(licenseDTO.ApplicationID)))
+            if (!(await _applicationService.IsExistAsync(licenseDTO.ApplicationID)))
             {
                 throw new ArgumentException("Application does not exist.", nameof(licenseDTO.ApplicationID));
             }
-            // to do later add validation for DriverID if it exists in the system
+            // to do later add validation for DriverID if it exists in the system 15/07/2025
             var license = _mapper.Map<License>(licenseDTO);
 
-            if(await _applicationService.CompleteApplicationAsync(licenseDTO.ApplicationID) is false)
+            if (await _applicationService.CompleteApplicationAsync(licenseDTO.ApplicationID) is false)
             {
                 throw new InvalidOperationException("Application could not be completed.");
             }
@@ -113,8 +113,67 @@ namespace BusinessLoginLayer.Services.Licenses
                 .GetLicenseValidityLengthAsync(license.LicenseClass);
             license.ExpirationDate = license.IssueDate.AddYears(licenseValidityLength);
             license.IsActive = true;
-            license.IssueReason = (byte)issueReason;   
+            license.IssueReason = (byte)issueReason;
             return await _licenseRepository.AddAsync(license);
+        }
+            
+        public async Task<int> IssueNewDrivingLicenseAsync(LicenseDTO licenseDTO)
+        {
+            return await _CreateLicenseAsync(licenseDTO, Enums.IssueReason.FirstTime);
+        }
+        public async Task<int> RenewLicenseAsync(int oldLicenseID,LicenseDTO licenseDTO)
+        {
+            if(oldLicenseID <= 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(oldLicenseID), "Old license ID must be greater than zero.");
+            }
+            if(await IsLicenseExistAndActiveAsync(oldLicenseID) is false)
+            {
+                throw new ArgumentException("Old license does not exist or is not active.", nameof(oldLicenseID));
+            }
+            if(await IsLicenseExpired(oldLicenseID) is false)
+            {
+                throw new InvalidOperationException(
+                    ($"{nameof(oldLicenseID)} License is not expired, cannot renew."));
+            }
+            return await _CreateLicenseAsync(licenseDTO, Enums.IssueReason.Renew);
+
+        }
+        public async Task<int> IssueReplacementForLostLicenseAsync(int oldLicenseID
+            , LicenseDTO licenseDTO)
+        {
+            if (oldLicenseID <= 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(oldLicenseID), "Old license ID must be greater than zero.");
+            }
+            if (await IsLicenseExistAndActiveAsync(oldLicenseID) is false)
+            {
+                throw new ArgumentException("Old license does not exist or is not active.", nameof(oldLicenseID));
+            }
+            if(await IsLicenseExpired(oldLicenseID) is true)
+            {
+                throw new InvalidOperationException(
+                    ($"{nameof(oldLicenseID)} License is expired, cannot issue replacement for lost license."));
+            }
+            return await _CreateLicenseAsync(licenseDTO, Enums.IssueReason.ReplacementForLost);
+        }
+        public async Task<int> IssueReplacementForDamagedLicenseAsync(int oldLicenseID
+            , LicenseDTO licenseDTO)
+        {
+            if (oldLicenseID <= 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(oldLicenseID), "Old license ID must be greater than zero.");
+            }
+            if (await IsLicenseExistAndActiveAsync(oldLicenseID) is false)
+            {
+                throw new ArgumentException("Old license does not exist or is not active.", nameof(oldLicenseID));
+            }
+            if (await IsLicenseExpired(oldLicenseID) is true)
+            {
+                throw new InvalidOperationException(
+                    ($"{nameof(oldLicenseID)} License is expired, cannot issue replacement for damaged license."));
+            }
+            return await _CreateLicenseAsync(licenseDTO, Enums.IssueReason.ReplacementForDamaged);
         }
 
         public async Task<bool> IsLicenseExpired(int id)

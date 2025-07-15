@@ -15,6 +15,8 @@ namespace BusinessLoginLayer.Profiles
         public LicenseProfile()
         {
             CreateMap<LicenseDTO, License>()
+                .ForMember(l => l.LicenseID, opt => opt.Ignore())
+                .ForMember(l => l.IssueReason, opt => opt.Ignore())
                 .ForMember(l => l.IssueDate, opt => opt.Ignore())
                 .ForMember(l => l.ExpirationDate, opt => opt.Ignore())
                 .ForMember(l => l.IsActive, opt => opt.Ignore());
