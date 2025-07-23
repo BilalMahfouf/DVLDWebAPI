@@ -88,6 +88,12 @@ namespace BusinessLoginLayer.Services
             {
                 return Result<int>.Failure("user dto can't be null", Enums.ErrorType.BadRequest);
             }
+            var createUserValidationResult=await CanCreateUserAsync(userDTO.PersonID);
+            if(!createUserValidationResult.IsSuccess)
+            {
+                return Result<int>.Failure(createUserValidationResult.ErrorMessage,
+                    createUserValidationResult.ErrorType);
+            }
             try
             {
                 var user = _mapper.Map<User>(userDTO);
