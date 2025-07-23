@@ -38,7 +38,7 @@ namespace BusinessLoginLayer.Services.Licenses
             {
                 throw new ArgumentOutOfRangeException(nameof(id), "ID must be greater than zero.");
             }
-            var license = await _licenseRepository.FindByIDAsync(id);
+            var license = await _licenseRepository.FindAsync(id);
             if (license is null)
             {
                 throw new ArgumentException(nameof(license));
@@ -58,8 +58,8 @@ namespace BusinessLoginLayer.Services.Licenses
 
         public async Task<bool> DeleteLicenseAsync(int id)
         {
-           if(id <= 0)
-            {
+           if(id <=0)
+        {
                 throw new ArgumentOutOfRangeException(nameof(id), "ID must be greater than zero.");
             }
             return await _licenseRepository.DeleteAsync(id);
@@ -71,7 +71,7 @@ namespace BusinessLoginLayer.Services.Licenses
             {
                 throw new ArgumentOutOfRangeException(nameof(id), "ID must be greater than zero.");
             }
-            var license = await _licenseRepository.FindByIDAsync(id);
+            var license = await _licenseRepository.FindAsync(id);
            return license is null ? null : _mapper.Map<ReadLicenseDTO>(license);
         }
 
@@ -182,7 +182,7 @@ namespace BusinessLoginLayer.Services.Licenses
             {
                 throw new ArgumentOutOfRangeException(nameof(id), "ID must be greater than zero.");
             }
-            var license = await _licenseRepository.FindByIDAsync(id);
+            var license = await _licenseRepository.FindAsync(id);
             if (license is null)
             {
                 throw new ArgumentException(nameof(license));

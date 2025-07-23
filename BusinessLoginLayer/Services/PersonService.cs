@@ -1,7 +1,10 @@
 ﻿using AutoMapper;
+using Core.Common;
 using Core.DTOs.Person;
+using Core.Interfaces;
 using Core.Interfaces.Repositories.People;
 using Core.Interfaces.Services.People;
+using Core.Shared;
 using DataAccessLayer;
 using Microsoft.EntityFrameworkCore.Metadata.Conventions;
 using System;
@@ -15,70 +18,78 @@ namespace BusinessLoginLayer.Services
     
     public class PersonService:IPersonService
     {
-        private readonly IPersonRepository _repo;
         private readonly IMapper _mapper;
-        public PersonService(IPersonRepository repo, IMapper mapper)
+        private readonly IUnitOfWork _uow;
+        public PersonService(IMapper mapper, IUnitOfWork uow)
         {
-            _repo = repo;
             _mapper = mapper;
+            _uow = uow;
         }
 
-        public async Task<int> CreatePersonAsync(PersonDTO personDTO)
+        public async Task<Result<int>> CreatePersonAsync(PersonDTO personDTO)
         {
-            if(personDTO == null)
+            if(personDTO is null)
             {
-                throw new ArgumentNullException(nameof(personDTO), "Person DTO cannot be null.");
+               return Result<int>.Failure("Person DTO cannot be null.",Enums.ErrorType.BadRequest);
             }
             var person = _mapper.Map<Person>(personDTO);
-            var insertedID = await _repo.AddAsync(person);
-            return insertedID;
+            _uow.personRepository.Add(person);
+            return await _uow.SaveChangesAsync() 
+                ? Result<int>.Success(person.PersonID) 
+                : Result<int>.Failure("Failed to create person.", Enums.ErrorType.InternalServerError);
         }
 
-        public Task<bool> DeletePersonAsync(int id)
+        public async Task<Result<bool>> DeletePersonAsync(int id)
         {
             if(id <= 0)
             {
-                throw new ArgumentOutOfRangeException(nameof(id), "ID must be greater than zero.");
+                return Result<bool>.Failure("ID must be greater than zero.", Enums.ErrorType.BadRequest);
             }
-            return _repo.DeleteAsync(id);
+           _uow.personRepository.Delete(id);
+            return await _uow.SaveChangesAsync() 
+                ? Result<bool>.Success(true) 
+                : Result<bool>.Failure("Failed to delete person.", Enums.ErrorType.InternalServerError);
         }
 
-        public async Task<ReadPersonDTO?> FindAsync(int id)
+        public async Task<Result<ReadPersonDTO?>> FindAsync(int id)
         {
            if(id<= 0)
             {
-                throw new ArgumentOutOfRangeException(nameof(id), "ID must be greater than zero.");
+               return Result<ReadPersonDTO?>.Failure("ID must be greater than zero.", Enums.ErrorType.BadRequest);
             }
-            var person = await _repo.FindByIDAsync(id);
+            var person = await _repo.FindAsync(p => p.PersonID == id);
             if(person is null)
             {
-                return null;
+                return Result<ReadPersonDTO?>.Failure("Person not found", Enums.ErrorType.NotFound);
             }
-            return _mapper.Map<ReadPersonDTO>(person);
+            var personDto=_mapper.Map<ReadPersonDTO>(person);
+            return Result<ReadPersonDTO?>.Success(personDto);
         }
 
-        public async Task<PersonDTO?> FindAsync(string nationalNo)
+        public async Task<Result<ReadPersonDTO?>> FindAsync(string nationalNo)
         {
             if(string.IsNullOrWhiteSpace(nationalNo))
             {
                 throw new ArgumentNullException(nameof(nationalNo), "National number cannot be null or empty.");
             }
-            var person=await _repo.FindByNationalNoAsync(nationalNo);
-            if(person is null)
+            var person = await _repo.FindAsync(p => p.NationalNo == nationalNo);
+            if (person is null)
             {
-                return null;
+                return Result<ReadPersonDTO?>.Failure("Person not found", Enums.ErrorType.NotFound);
             }
-            return _mapper.Map<PersonDTO>(person);
+            var personDto = _mapper.Map<ReadPersonDTO>(person);
+            return Result<ReadPersonDTO?>.Success(personDto);
         }
 
-        public async Task<IEnumerable<ReadPersonDTO>> GetAllAsync()
+        public async Task<Result<IEnumerable<ReadPersonDTO>>> GetAllAsync()
         {
-            var people = await _repo.GetAllAsync();
+            var people = await _uow.personRepository.GetAllAsync();
             if (people == null || !people.Any())
             {
-                return Enumerable.Empty<ReadPersonDTO>();
+                return Result<IEnumerable<ReadPersonDTO>>.Failure("No persons found.", Enums.ErrorType.NotFound);
             }
-            return _mapper.Map<IEnumerable<ReadPersonDTO>>(people);
+            var peopleDto = _mapper.Map<IEnumerable<ReadPersonDTO>>(people);
+            return Result<IEnumerable<ReadPersonDTO>>.Success(peopleDto);
         }
 
         public async Task<bool> IsExistAsync(int id)
@@ -105,7 +116,7 @@ namespace BusinessLoginLayer.Services
             {
                 throw new ArgumentNullException(nameof(personDTO), "Person DTO cannot be null.");
             }
-            var person = await _repo.FindByIDAsync(personID);
+            var person = await _repo.FindAsync(personID);
             if (person is null)
             {
                 throw new ArgumentNullException(nameof(person), "Person not found.");

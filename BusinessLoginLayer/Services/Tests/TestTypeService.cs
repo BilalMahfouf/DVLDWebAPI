@@ -32,7 +32,7 @@ namespace BusinessLoginLayer.Services.Tests
             {
                 throw new ArgumentOutOfRangeException(nameof(id), "ID must be greater than zero.");
             }
-            var testType = await _repo.FindByIDAsync(id);
+            var testType = await _repo.FindAsync(id);
             if (testType is null)
             {
                 return null;
@@ -50,7 +50,7 @@ namespace BusinessLoginLayer.Services.Tests
             {
                 throw new ArgumentOutOfRangeException(nameof(fees), "Fees cannot be negative.");
             }
-            var testType = await _repo.FindByIDAsync(testTypeID);
+            var testType = await _repo.FindAsync(testTypeID);
             if (testType is null)
             {
                 throw new ArgumentNullException(nameof(testType), "Test type not found.");

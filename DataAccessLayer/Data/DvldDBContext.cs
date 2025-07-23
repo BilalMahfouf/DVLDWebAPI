@@ -56,8 +56,12 @@ public partial class DvldDBContext : DbContext
 
     public virtual DbSet<View_1> View_1s { get; set; }
 
-    
 
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        // Add your connection string directly here
+        optionsBuilder.UseSqlServer("Server=localhost;Database=DVLD;User Id=sa;Password=sa123456;Encrypt=False;TrustServerCertificate=True;Connection Timeout=30;");
+    }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Application>(entity =>

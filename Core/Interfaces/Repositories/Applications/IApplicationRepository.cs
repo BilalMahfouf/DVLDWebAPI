@@ -1,4 +1,5 @@
 ﻿using Core.Interfaces.Repositories.Common;
+using Core.Shared;
 using DataAccessLayer;
 using System;
 using System.Collections.Generic;
@@ -10,6 +11,6 @@ namespace Core.Interfaces.Repositories.Applications
 {
     public interface IApplicationRepository:IRepository<Application>
     {
-        Task<bool> IsExistAsync(int applicationID);
+        Task<Result<bool>> IsExistAsync(int applicationID);
     }
 }

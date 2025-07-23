@@ -30,7 +30,7 @@ namespace BusinessLoginLayer.Services.Licenses
             {
                 throw new ArgumentOutOfRangeException(nameof(id), "ID must be greater than zero.");
             }
-            var licenseClass = await _repo.FindByIDAsync(id);
+            var licenseClass = await _repo.FindAsync(id);
             return licenseClass is null ? null : _mapper.Map<LicenseClassDTO>(licenseClass);
         }
         public async Task<bool> UpdateFeesAsync(int licenseClassID, decimal fees)
@@ -43,7 +43,7 @@ namespace BusinessLoginLayer.Services.Licenses
             {
                 throw new ArgumentOutOfRangeException(nameof(fees), "Fees cannot be negative.");
             }
-            var licenseClass = await _repo.FindByIDAsync(licenseClassID);
+            var licenseClass = await _repo.FindAsync(licenseClassID);
             if (licenseClass is null)
             {
                 throw new ArgumentNullException(nameof(licenseClass), "License class not found.");
@@ -59,7 +59,7 @@ namespace BusinessLoginLayer.Services.Licenses
                 throw new ArgumentOutOfRangeException(nameof(licenseClassID)
                     , "license class id must be greater then 0");
             }
-            var licenseClass = await _repo.FindByIDAsync(licenseClassID);
+            var licenseClass = await _repo.FindAsync(licenseClassID);
             if(licenseClass is null )
             {
                 throw new InvalidOperationException(nameof(licenseClass));

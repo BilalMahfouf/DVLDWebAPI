@@ -49,7 +49,7 @@ namespace BusinessLoginLayer.Services.Tests
             {
                 throw new ArgumentOutOfRangeException(nameof(id), "ID must be greater than zero.");
             }
-            var testAppointment = await _repo.FindByIDAsync(id);
+            var testAppointment = await _repo.FindAsync(id);
             return testAppointment is null ? null : _mapper.Map<TestAppointmentDTO>(testAppointment);
         }
 
@@ -69,7 +69,7 @@ namespace BusinessLoginLayer.Services.Tests
             {
                 throw new ArgumentOutOfRangeException(nameof(id), "ID must be greater than zero.");
             }
-            var testAppointment = await _repo.FindByIDAsync(id);
+            var testAppointment = await _repo.FindAsync(id);
             if(testAppointment is null)
             {
                 throw new ArgumentNullException(nameof(testAppointment), "Test appointment not found.");
@@ -84,7 +84,7 @@ namespace BusinessLoginLayer.Services.Tests
             {
                 throw new ArgumentOutOfRangeException(nameof(id), "ID must be greater than zero.");
             }
-            var testAppointment = await _repo.FindByIDAsync(id);
+            var testAppointment = await _repo.FindAsync(id);
             if (testAppointment is null)
             {
                 throw new ArgumentNullException(nameof(testAppointment), "Test appointment not found.");

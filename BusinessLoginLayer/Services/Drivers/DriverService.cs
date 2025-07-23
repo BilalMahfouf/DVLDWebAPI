@@ -39,7 +39,7 @@ namespace BusinessLoginLayer.Services.Drivers
             {
                 throw new ArgumentOutOfRangeException(nameof(id), "ID must be greater than zero.");
             }
-           var driver = await _repo.FindByIDAsync(id);
+           var driver = await _repo.FindAsync(id);
             return driver is null ? null : _mapper.Map<ReadDriverDTO>(driver);
         }
 

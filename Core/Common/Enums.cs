@@ -33,6 +33,13 @@ namespace Core.Common
         {
         FirstTime=1, Renew= 2, ReplacementForDamaged=3,  ReplacementForLost=4
         }
-       
+        public enum ErrorType
+        {
+            NotFound = 1,
+            InternalServerError = 4,
+            Conflict = 5,
+            BadRequest = 6
+        }
+
     }
 }

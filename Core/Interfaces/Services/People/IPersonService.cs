@@ -1,4 +1,5 @@
 ﻿using Core.DTOs.Person;
+using Core.Shared;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,14 +10,14 @@ namespace Core.Interfaces.Services.People
 {
     public interface IPersonService
     {
-        Task<ReadPersonDTO?> FindAsync(int  id);
-        Task<PersonDTO?> FindAsync(string nationalNo);
-        Task<int> CreatePersonAsync(PersonDTO personDTO);
-        Task<bool> UpdatePersonAsync(int personID,PersonDTO personDTO);
-        Task<bool> DeletePersonAsync(int id);
-        Task<bool> IsExistAsync(int id);
-        Task<bool> IsExistAsync(string nationalNo);
-        Task<IEnumerable<ReadPersonDTO>> GetAllAsync();
+        Task<Result<ReadPersonDTO?>> FindAsync(int  id);
+        Task<Result<PersonDTO?>> FindAsync(string nationalNo);
+        Task<Result<int>> CreatePersonAsync(PersonDTO personDTO);
+        Task<Result<bool>> UpdatePersonAsync(int personID,PersonDTO personDTO);
+        Task<Result<bool>> DeletePersonAsync(int id);
+        Task<Result<bool>> IsExistAsync(int id);
+        Task<Result<bool>> IsExistAsync(string nationalNo);
+        Task<Result<IEnumerable<ReadPersonDTO>>> GetAllAsync();
 
 
     }

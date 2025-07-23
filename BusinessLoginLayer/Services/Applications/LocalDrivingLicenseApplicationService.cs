@@ -62,7 +62,7 @@ namespace BusinessLoginLayer.Services.Applications
             }
             if(!await _localDLAppRepository.DeleteAsync(LDLapplicationID))
                 return false;
-            var localDLApp = await _localDLAppRepository.FindByIDAsync(LDLapplicationID);
+            var localDLApp = await _localDLAppRepository.FindAsync(LDLapplicationID);
             if(localDLApp is null)
             {
                 throw new InvalidOperationException(nameof(LDLapplicationID)
@@ -78,7 +78,7 @@ namespace BusinessLoginLayer.Services.Applications
                 throw new ArgumentOutOfRangeException(nameof(LDLapplicationID)
                 , "Local Driving License application ID must be greater than zero.");
             }
-            var localDLApp = await _localDLAppRepository.FindByIDAsync(LDLapplicationID);
+            var localDLApp = await _localDLAppRepository.FindAsync(LDLapplicationID);
             return localDLApp is null ? null : _mapper
                 .Map<LocalDrivingLicenseDTO>(localDLApp);
         }

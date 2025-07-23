@@ -36,7 +36,7 @@ namespace BusinessLoginLayer.Services.Licenses
             {
                 throw new ArgumentOutOfRangeException(nameof(licenseID));
             }
-           var internationalLicense=await _internationalLicenseRepository.FindByIDAsync(licenseID);
+           var internationalLicense=await _internationalLicenseRepository.FindAsync(licenseID);
             if (internationalLicense is null)
             {
                 throw new ArgumentException(nameof(internationalLicense));
@@ -70,7 +70,7 @@ namespace BusinessLoginLayer.Services.Licenses
             {
                 throw new ArgumentOutOfRangeException(nameof(licenseID));
             }
-            var license = await _internationalLicenseRepository.FindByIDAsync(licenseID);
+            var license = await _internationalLicenseRepository.FindAsync(licenseID);
             return license is null ? null : _mapper.Map<ReadInternationalLicenseDTO>(license);
         }
 

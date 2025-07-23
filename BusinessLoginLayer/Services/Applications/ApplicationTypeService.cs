@@ -37,7 +37,7 @@ namespace BusinessLoginLayer.Services.Applications
             {
                 throw new ArgumentOutOfRangeException(nameof(fees), "Fees cannot be negative.");
             }
-            var applicationType = await _repo.FindByIDAsync(applicationTypeID);
+            var applicationType = await _repo.FindAsync(applicationTypeID);
             if (applicationType is null)
             {
               throw new ArgumentNullException(nameof(applicationType), "Application type not found.");
@@ -52,7 +52,7 @@ namespace BusinessLoginLayer.Services.Applications
             {
                 throw new ArgumentOutOfRangeException(nameof(id), "ID must be greater than zero.");
             }
-            var applicationType = await _repo.FindByIDAsync(id);
+            var applicationType = await _repo.FindAsync(id);
             if (applicationType is null)
             {
                 return null;

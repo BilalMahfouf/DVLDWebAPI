@@ -50,7 +50,7 @@ namespace BusinessLoginLayer.Services.Tests
             {
                 throw new ArgumentOutOfRangeException(nameof(id), "ID must be greater than zero.");
             }
-            var test = await _repo.FindByIDAsync(id);
+            var test = await _repo.FindAsync(id);
             return test is null ? null : _mapper.Map<TestDTO>(test);
         }
 

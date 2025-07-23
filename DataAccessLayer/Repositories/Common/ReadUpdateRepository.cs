@@ -6,6 +6,7 @@ using Microsoft.Identity.Client;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -17,40 +18,47 @@ namespace DataAccessLayer.Repositories.Common
         protected readonly DvldDBContext _context;
         protected readonly DbSet<TEntity> _dbSet;
 
-        protected ReadUpdateRepository(DvldDBContext context)
+        public ReadUpdateRepository(DvldDBContext context)
         {
             _context = context;
             _dbSet = context.Set<TEntity>();
         }
 
-        public virtual  async Task<IEnumerable<TEntity>> GetAllAsync()
+        public virtual async Task<IEnumerable<TEntity>> GetAllAsync
+        (Expression<Func<TEntity, bool>> filter = null!, string includeProperties = "")
         {
             IQueryable<TEntity> query = _dbSet;
-            return await query.AsNoTracking().ToListAsync();
+
+            if (filter != null)
+            {
+                query = query.Where(filter);
+            }
+
+            foreach (var includeProperty in includeProperties.Split
+                (new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+            {
+                query = query.Include(includeProperty);
+            }
+
+
+            return await  query.ToListAsync();
         }
 
-        public async Task<bool> UpdateAsync(TEntity entity)
+        public void Update(TEntity entity)
         {
-            if(entity is null)
-            {
-                throw new ArgumentNullException(nameof(entity));
-            }
-            bool result = false;
-            try
-            {
-                _dbSet.Update(entity);
-                result= await _context.SaveChangesAsync() > 0;
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(nameof(ex));
-            }
-            return result;
-            
+            _dbSet.Update(entity);
         }
-        public virtual async Task<TEntity?> FindByIDAsync(int ID)
+        public virtual async Task<TEntity?> FindAsync
+         (Expression<Func<TEntity, bool>> filter, string includeProperties = "")
         {
-            return await _dbSet.FirstOrDefaultAsync(e => e.ID == ID);
+           IQueryable<TEntity> query = _dbSet;
+          
+            foreach (var includeProperty in includeProperties.Split
+                (new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+            {
+                query = query.Include(includeProperty);
+            }
+            return await query.FirstOrDefaultAsync(filter);
         }
     }
 }

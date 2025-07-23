@@ -28,7 +28,7 @@ namespace BusinessLoginLayer.Services
          {
              throw new ArgumentOutOfRangeException(nameof(id), "ID must be greater than zero.");
          }
-         var user = await _userRepository.FindByIDAsync(id);
+         var user = await _userRepository.FindAsync(id);
             if(user is null)
             {
                 throw new ArgumentNullException(nameof(user), "User not found.");
@@ -63,7 +63,7 @@ namespace BusinessLoginLayer.Services
             {
                 throw new ArgumentOutOfRangeException(nameof(id), "ID must be greater than zero.");
             }
-            var user = await _userRepository.FindByIDAsync(id);
+            var user = await _userRepository.FindAsync(id);
             if (user is null)
             {
                 throw new ArgumentNullException(nameof(user), "User not found.");
@@ -87,7 +87,7 @@ namespace BusinessLoginLayer.Services
             {
                 throw new ArgumentOutOfRangeException(nameof(id), "ID must be greater than zero.");
             }
-            var user = await _userRepository.FindByIDAsync(id);
+            var user = await _userRepository.FindAsync(id);
             return user is null ? null : _mapper.Map<ReadUserDTO>(user);
         }
 
@@ -111,7 +111,7 @@ namespace BusinessLoginLayer.Services
             {
                 throw new ArgumentNullException(nameof(userDTO), "User DTO cannot be null.");
             }
-            var user = await _userRepository.FindByIDAsync(userID);
+            var user = await _userRepository.FindAsync(userID);
             if (user is null)
             {
                 throw new ArgumentNullException(nameof(user), "User not found.");

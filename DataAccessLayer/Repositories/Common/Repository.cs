@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -14,49 +15,21 @@ namespace DataAccessLayer.Repositories.Common
         where TEntity : class,IEntity
     {
         public Repository(DvldDBContext dbContext):base(dbContext) { }
-        public async Task<int> AddAsync(TEntity entity)
+        public void Add(TEntity entity)
         {
-            int insertedID = 0;
-            if (entity is null)
-            {
-                throw new ArgumentNullException(nameof(entity));
-            }
-            try
-            {
-                await _dbSet.AddAsync(entity);
-                await _context.SaveChangesAsync();
-                 insertedID=entity.ID;
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(nameof(ex));
-            }
-            return insertedID;
+            _dbSet.Add(entity);
         }
 
-        public async Task<bool> DeleteAsync(int ID)
+        public  void Delete(int id)
         {
-           if(ID == 0)
-            {
-                throw new ArgumentNullException(nameof(ID));
-            }
-            bool result = false;
-           try
-            {
-                var entity=await FindByIDAsync(ID);
-                if (entity is null)
-                {
-                    throw new ArgumentNullException(nameof(entity));
-                }
+            var entity = _dbSet.Find(id);
 
-                _context.Remove(entity);
-                result = await _context.SaveChangesAsync() > 0;
-            }
-            catch(Exception ex)
-            {
-                throw new Exception(nameof(ex));
-            }
-            return result;
+            _dbSet.Remove(entity);
+        }
+
+        public async Task<bool> IsExistAsync(Expression<Func<TEntity,bool>> filter)
+        {
+        return await _dbSet.AnyAsync(filter);
         }
 
         

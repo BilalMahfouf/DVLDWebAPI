@@ -5,11 +5,15 @@ using static System.Net.Mime.MediaTypeNames;
 
 namespace DataAccessLayer;
 
-public partial class ApplicationType
+public partial class ApplicationType: IEntity
 {
     public int ApplicationTypeID { get; set; }
 
-    
+    public int ID
+    {
+        get => ApplicationTypeID;
+        set => ApplicationTypeID = value;
+    }
 
     public string ApplicationTypeTitle { get; set; } = null!;
 

@@ -31,7 +31,7 @@ namespace BusinessLoginLayer.Services.Applications
             {
                 throw new ArgumentOutOfRangeException(nameof(applicationID), "Application ID must be greater than zero.");
             }
-            var application = await _applicationRepository.FindByIDAsync(applicationID);
+            var application = await _applicationRepository.FindAsync(applicationID);
             if (application is null)
             {
                 throw new ArgumentNullException(nameof(application), "Application not found.");
@@ -84,7 +84,7 @@ namespace BusinessLoginLayer.Services.Applications
             {
                 throw new ArgumentOutOfRangeException(nameof(applicationID), "Application ID must be greater than zero.");
             }
-            var application = await _applicationRepository.FindByIDAsync(applicationID);
+            var application = await _applicationRepository.FindAsync(applicationID);
             return application is null ? null : _mapper.Map<ReadApplicationDTO>(application);
         }
 

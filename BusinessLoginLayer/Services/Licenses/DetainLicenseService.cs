@@ -61,7 +61,7 @@ namespace BusinessLoginLayer.Services.Licenses
             {
                 throw new ArgumentOutOfRangeException(nameof(id), "id must be greater then 0");
             }
-            var dLicense = await _detainedLicenseRepository.FindByIDAsync(id);
+            var dLicense = await _detainedLicenseRepository.FindAsync(id);
             return dLicense is null ? null : _mapper.Map<DetainLicenseDTO>(dLicense);
 
         }
@@ -93,7 +93,7 @@ namespace BusinessLoginLayer.Services.Licenses
                 throw new InvalidOperationException(nameof
                     (releaseDTO.ReleaseApplicationID));
             }
-            var detainedLicense = await _detainedLicenseRepository.FindByIDAsync
+            var detainedLicense = await _detainedLicenseRepository.FindAsync
                 (releaseDTO.DetainID);
             if(detainedLicense is null )
             {

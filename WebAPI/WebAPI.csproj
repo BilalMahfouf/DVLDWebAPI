@@ -20,4 +20,10 @@
     <ProjectReference Include="..\DataAccessLayer\DataAccessLayer.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Controllers\Applications\" />
+    <Folder Include="Controllers\Licenses\" />
+    <Folder Include="Controllers\Tests\" />
+  </ItemGroup>
+
 </Project>
