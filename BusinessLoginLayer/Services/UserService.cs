@@ -1,8 +1,14 @@
 ﻿using AutoMapper;
+using Core.Common;
 using Core.DTOs.User;
+using Core.Interfaces;
 using Core.Interfaces.Repositories.Users;
 using Core.Interfaces.Services.Users;
+using Core.Shared;
 using DataAccessLayer;
+using DataAccessLayer.Repositories.User;
+using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Metadata.Conventions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,111 +19,189 @@ namespace BusinessLoginLayer.Services
 {
     public class UserService : IUserService
     {
-        private readonly IUserRepository _userRepository;
+        private readonly IUnitOfWork _uow;
         private readonly IMapper _mapper;
 
-        public UserService(IMapper mapper, IUserRepository userRepository)
+        public UserService(IMapper mapper,IUnitOfWork uow)
         {
             _mapper = mapper;
-            _userRepository = userRepository;
+            _uow = uow;
         }
 
-        public async Task<bool> ActivateAsync(int id)
+        private async Task<Result<bool>> _UpdateUserIsActiveStatus(int id,bool isActive)
         {
-         if(id<= 0)
+            if(id <= 0)
          {
-             throw new ArgumentOutOfRangeException(nameof(id), "ID must be greater than zero.");
-         }
-         var user = await _userRepository.FindAsync(id);
-            if(user is null)
-            {
-                throw new ArgumentNullException(nameof(user), "User not found.");
+                return Result<bool>.Failure("ID must be greater than zero.");
             }
-            user.IsActive = true;
-            return await _userRepository.UpdateAsync(user);
-        }
+            try
+            {
+                var user = await _uow.userRepository.FindAsync(u=>u.UserID==id);
+                if (user is null)
+                {
+                    return Result<bool>.Failure("User not found", Enums.ErrorType.NotFound);
+                }
+                user.IsActive = isActive;
+                _uow.userRepository.Update(user);
+                var result = await _uow.SaveChangesAsync();
+                return result ? Result<bool>.Success(true) : Result<bool>.Failure(
+                    "Can't updated user is active status", Enums.ErrorType.Conflict);
+            }
+            catch(Exception ex)
+            {
+                return Result<bool>.Failure("an error occurred while saving data " +
+                    $"to the DB ex {ex.Message}",Enums.ErrorType.InternalServerError);
+            }
+            
 
-        public async Task<bool> CanCreateUserAsync(int personID)
+        }
+        public async Task<Result<bool>> ActivateAsync(int id)
         {
-            if(personID <= 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(personID), "Person ID must be greater than zero.");
-            }
-            return !(await _userRepository.isExistByPersonID(personID));
+            return await _UpdateUserIsActiveStatus(id, true);
         }
 
-        public Task<int> CreateUserAsync(CreateUserDTO userDTO)
+        public async Task<Result<bool>> CanCreateUserAsync(int personID)
+        {
+            if (personID <= 0)
+            {
+                Result<bool>.Failure("personID must be greater than zero.",
+                     Enums.ErrorType.BadRequest);
+            }
+            try
+            {
+                var isExist = await _uow.userRepository.IsExistAsync(u => u.PersonID == personID);
+                return isExist ?
+                    Result<bool>.Failure("User already exists for this personID.",
+                    Enums.ErrorType.Conflict) :
+                    Result<bool>.Success(true);
+            }
+            catch (Exception ex)
+            {
+                return Result<bool>.Failure("an error occurred while retrieving data " +
+                    $"from the DB ex {ex.Message}", Enums.ErrorType.InternalServerError);
+            }
+        }
+
+        public async Task<Result<int>> CreateUserAsync(CreateUserDTO userDTO)
         {
             if(userDTO == null)
             {
-                throw new ArgumentNullException(nameof(userDTO), "User DTO cannot be null.");
+                return Result<int>.Failure("user dto can't be null", Enums.ErrorType.BadRequest);
             }
-            var user = _mapper.Map<User>(userDTO);
-            var insertedID = _userRepository.AddAsync(user);
-            return insertedID;
+            try
+            {
+                var user = _mapper.Map<User>(userDTO);
+                _uow.userRepository.Add(user);
+                var result= await _uow.SaveChangesAsync();
+                if(result)
+                {
+
+                }
+                return result ? Result<int>.Success(user.UserID) : Result<int>.
+                    Failure("can't add this user", Enums.ErrorType.Conflict);
+            }
+             catch(Exception ex)
+            {
+                return Result<int>.Failure("an error occurred while saving data " +
+                    $"to the DB ex {ex.Message}", Enums.ErrorType.InternalServerError);
+            }
         }
 
-        public async Task<bool> DeActivateAsync(int id)
+        public async Task<Result<bool>> DeActivateAsync(int id)
         {
-            if (id <= 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(id), "ID must be greater than zero.");
-            }
-            var user = await _userRepository.FindAsync(id);
-            if (user is null)
-            {
-                throw new ArgumentNullException(nameof(user), "User not found.");
-            }
-            user.IsActive = false;
-            return await _userRepository.UpdateAsync(user);
+            return await _UpdateUserIsActiveStatus(id, false);
         }
 
-        public async Task<bool> DeleteUserAsync(int id)
-        {
-            if(id <= 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(id), "ID must be greater than zero.");
-            }
-            return await _userRepository.DeleteAsync(id);
-        }
-
-        public async Task<ReadUserDTO?> FindByIDAsync(int id)
+        public async Task<Result<bool>> DeleteUserAsync(int id)
         {
             if(id <= 0)
             {
-                throw new ArgumentOutOfRangeException(nameof(id), "ID must be greater than zero.");
+                Result<bool>.Failure("invalid id", Enums.ErrorType.BadRequest);
             }
-            var user = await _userRepository.FindAsync(id);
-            return user is null ? null : _mapper.Map<ReadUserDTO>(user);
+            try
+            {
+              _uow.userRepository.Delete(id);
+                return await _uow.SaveChangesAsync() ? Result<bool>.Success(true)
+                    : Result<bool>.Failure
+                    ("can't delete this user", Enums.ErrorType.Conflict);
+            }
+            catch (Exception ex)
+            {
+                return Result<bool>.Failure("an error occurred while saving data " +
+                    $"to the DB ex {ex.Message}", Enums.ErrorType.InternalServerError);
+            }
         }
 
-        public async Task<IEnumerable<ReadUserDTO>> GetAllAsync()
+        public async Task<Result<ReadUserDTO?>> FindByIDAsync(int id)
         {
-            var users = await _userRepository.GetAllAsync();
-            if(users is null || !users.Any())
+            if(id <= 0)
             {
-                return Enumerable.Empty<ReadUserDTO>();
+                return Result<ReadUserDTO?>.Failure("invalid user id", Enums.ErrorType.BadRequest);
             }
-            return _mapper.Map<IEnumerable<ReadUserDTO>>(users);
+            try
+            {
+                var user = await _uow.userRepository.FindAsync(u => u.UserID == id);
+                if(user is null)
+                {
+                    return Result<ReadUserDTO?>.Failure("User not found.", Enums.ErrorType.NotFound);
+                }
+                return Result<ReadUserDTO?>.Success(_mapper.Map<ReadUserDTO>(user));
+            }
+            catch (Exception ex)
+            {
+                return Result<ReadUserDTO?>.Failure("an error occurred while retrieving data " +
+                    $"from the DB ex {ex.Message}", Enums.ErrorType.InternalServerError);
+            }
+
+
         }
 
-        public async Task<bool> UpdateUserAsync(int userID,UpdateUserDTO userDTO)
+        public async Task<Result<IEnumerable<ReadUserDTO>>> GetAllAsync()
         {
-            if(userID <= 0)
+            try
             {
-                throw new ArgumentOutOfRangeException(nameof(userID), "User ID must be greater than zero.");
+                var users = await _uow.userRepository.GetAllAsync();
+                if( users is null || !users.Any())
+                {
+                    return Result<IEnumerable<ReadUserDTO>>
+                        .Failure("Users not found.", Enums.ErrorType.NotFound);
+                }
+                return Result<IEnumerable<ReadUserDTO>>.Success(_mapper.Map
+                    <IEnumerable<ReadUserDTO>>(users));
             }
-            if (userDTO is null)
+            catch (Exception ex)
             {
-                throw new ArgumentNullException(nameof(userDTO), "User DTO cannot be null.");
+                return Result<IEnumerable<ReadUserDTO>>.Failure("an error occurred while retrieving data " +
+                    $"from the DB ex {ex.Message}", Enums.ErrorType.InternalServerError);
             }
-            var user = await _userRepository.FindAsync(userID);
-            if (user is null)
+        }
+
+        public async Task<Result<bool>> UpdateUserAsync(int userID,UpdateUserDTO userDTO)
+        {
+            if(userID <= 0 || userDTO is null)
             {
-                throw new ArgumentNullException(nameof(user), "User not found.");
+               return Result<bool>.Failure("Invalid user ID or userDTO."
+                   , Enums.ErrorType.BadRequest);
             }
-            _mapper.Map(userDTO, user);
-            return await _userRepository.UpdateAsync(user);   
+           try
+            {
+                var user = await _uow.userRepository.FindAsync(u => u.UserID == userID);
+                if(user is null)
+                {
+                    return Result<bool>.Failure("User not found.", Enums.ErrorType.NotFound);
+                }
+                _mapper.Map(userDTO, user);
+                _uow.userRepository.Update(user);
+                var result = await _uow.SaveChangesAsync();
+                return result ? Result<bool>.Success(true) : Result<bool>.
+                    Failure("can't update this user", Enums.ErrorType.Conflict);
+            }
+            catch (Exception ex)
+            {
+                return Result<bool>.Failure("an error occurred while saving data " +
+                    $"to the DB ex {ex.Message}", Enums.ErrorType.InternalServerError);
+            }
+
         }
     }
 }

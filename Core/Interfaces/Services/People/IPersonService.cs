@@ -11,7 +11,7 @@ namespace Core.Interfaces.Services.People
     public interface IPersonService
     {
         Task<Result<ReadPersonDTO?>> FindAsync(int  id);
-        Task<Result<PersonDTO?>> FindAsync(string nationalNo);
+        Task<Result<ReadPersonDTO?>> FindAsync(string nationalNo);
         Task<Result<int>> CreatePersonAsync(PersonDTO personDTO);
         Task<Result<bool>> UpdatePersonAsync(int personID,PersonDTO personDTO);
         Task<Result<bool>> DeletePersonAsync(int id);

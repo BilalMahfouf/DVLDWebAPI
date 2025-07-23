@@ -32,11 +32,19 @@ namespace BusinessLoginLayer.Services
             {
                return Result<int>.Failure("Person DTO cannot be null.",Enums.ErrorType.BadRequest);
             }
-            var person = _mapper.Map<Person>(personDTO);
-            _uow.personRepository.Add(person);
-            return await _uow.SaveChangesAsync() 
-                ? Result<int>.Success(person.PersonID) 
-                : Result<int>.Failure("Failed to create person.", Enums.ErrorType.InternalServerError);
+            try
+            {
+                var person = _mapper.Map<Person>(personDTO);
+                _uow.personRepository.Add(person);
+                return await _uow.SaveChangesAsync()
+                    ? Result<int>.Success(person.PersonID)
+                    : Result<int>.Failure("Failed to create person.", Enums.ErrorType.Conflict);
+            }
+            catch(Exception ex)
+            {
+                return Result<int>.Failure($"An error occurred while creating the person: {ex.Message}", Enums.ErrorType.InternalServerError);
+            }
+            
         }
 
         public async Task<Result<bool>> DeletePersonAsync(int id)
@@ -45,10 +53,18 @@ namespace BusinessLoginLayer.Services
             {
                 return Result<bool>.Failure("ID must be greater than zero.", Enums.ErrorType.BadRequest);
             }
-           _uow.personRepository.Delete(id);
-            return await _uow.SaveChangesAsync() 
-                ? Result<bool>.Success(true) 
-                : Result<bool>.Failure("Failed to delete person.", Enums.ErrorType.InternalServerError);
+            try
+            {
+                _uow.personRepository.Delete(id);
+                return await _uow.SaveChangesAsync()
+                    ? Result<bool>.Success(true)
+                    : Result<bool>.Failure("Failed to delete person.", Enums.ErrorType.Conflict);
+            }
+            catch(Exception ex)
+            {
+                return Result<bool>.Failure($"An error occurred while deleting the person: {ex.Message}", Enums.ErrorType.InternalServerError);
+            }
+
         }
 
         public async Task<Result<ReadPersonDTO?>> FindAsync(int id)
@@ -57,72 +73,119 @@ namespace BusinessLoginLayer.Services
             {
                return Result<ReadPersonDTO?>.Failure("ID must be greater than zero.", Enums.ErrorType.BadRequest);
             }
-            var person = await _repo.FindAsync(p => p.PersonID == id);
-            if(person is null)
+           try
             {
-                return Result<ReadPersonDTO?>.Failure("Person not found", Enums.ErrorType.NotFound);
+                var person = await _uow.personRepository.
+                    FindAsync(p => p.PersonID == id);
+                if (person is null)
+                {
+                    return Result<ReadPersonDTO?>.Failure("Person not found", Enums.ErrorType.NotFound);
+                }
+                var personDto = _mapper.Map<ReadPersonDTO>(person);
+                return Result<ReadPersonDTO?>.Success(personDto);
             }
-            var personDto=_mapper.Map<ReadPersonDTO>(person);
-            return Result<ReadPersonDTO?>.Success(personDto);
+            catch(Exception ex)
+            {
+                return Result<ReadPersonDTO?>.Failure($"An error occurred while finding the person: {ex.Message}", Enums.ErrorType.InternalServerError);
+            }
+
         }
 
         public async Task<Result<ReadPersonDTO?>> FindAsync(string nationalNo)
         {
             if(string.IsNullOrWhiteSpace(nationalNo))
             {
-                throw new ArgumentNullException(nameof(nationalNo), "National number cannot be null or empty.");
+                return Result<ReadPersonDTO?>.Failure("Invalid national no ", Enums.ErrorType.BadRequest);
             }
-            var person = await _repo.FindAsync(p => p.NationalNo == nationalNo);
-            if (person is null)
+            try
             {
-                return Result<ReadPersonDTO?>.Failure("Person not found", Enums.ErrorType.NotFound);
+                var person = await _uow.personRepository.
+                FindAsync(p => p.NationalNo == nationalNo);
+                if (person is null)
+                {
+                    return Result<ReadPersonDTO?>.Failure("Person not found", Enums.ErrorType.NotFound);
+                }
+                var personDto = _mapper.Map<ReadPersonDTO>(person);
+                return Result<ReadPersonDTO?>.Success(personDto);
             }
-            var personDto = _mapper.Map<ReadPersonDTO>(person);
-            return Result<ReadPersonDTO?>.Success(personDto);
+            catch (Exception ex)
+            {
+                return Result<ReadPersonDTO?>.Failure($"An error occurred while finding the person: {ex.Message}", Enums.ErrorType.InternalServerError);
+            }
+
         }
 
         public async Task<Result<IEnumerable<ReadPersonDTO>>> GetAllAsync()
         {
-            var people = await _uow.personRepository.GetAllAsync();
-            if (people == null || !people.Any())
+            try
             {
-                return Result<IEnumerable<ReadPersonDTO>>.Failure("No persons found.", Enums.ErrorType.NotFound);
+                var people = await _uow.personRepository.GetAllAsync();
+                if (people == null || !people.Any())
+                {
+                    return Result<IEnumerable<ReadPersonDTO>>.Failure("No persons found.", Enums.ErrorType.NotFound);
+                }
+                var peopleDto = _mapper.Map<IEnumerable<ReadPersonDTO>>(people);
+                return Result<IEnumerable<ReadPersonDTO>>.Success(peopleDto);
             }
-            var peopleDto = _mapper.Map<IEnumerable<ReadPersonDTO>>(people);
-            return Result<IEnumerable<ReadPersonDTO>>.Success(peopleDto);
+            catch (Exception ex)
+            {
+                return Result<IEnumerable<ReadPersonDTO>>.Failure($"An error occurred while finding the list of people: {ex.Message}", Enums.ErrorType.InternalServerError);
+            }
+
         }
 
-        public async Task<bool> IsExistAsync(int id)
+        public async Task<Result<bool>> IsExistAsync(int id)
         {
            if(id <= 0)
             {
-                throw new ArgumentOutOfRangeException(nameof(id), "ID must be greater than zero.");
+                return Result<bool>.Failure("ID must be greater than zero.", Enums.ErrorType.BadRequest);
             }
-            return await _repo.IsExistAsync(id);
+
+            var result= await _uow.personRepository.IsExistAsync(p => p.PersonID == id);
+            return result 
+                ? Result<bool>.Success(true) 
+                : Result<bool>.Failure("Person does not exist.", Enums.ErrorType.NotFound);
         }
 
-        public async Task<bool> IsExistAsync(string nationalNo)
+        public async Task<Result<bool>> IsExistAsync(string nationalNo)
         {
            if(string.IsNullOrWhiteSpace(nationalNo))
             {
-                throw new ArgumentNullException(nameof(nationalNo), "National number cannot be null or empty.");
+                return Result<bool>.Failure("National number cannot be null or empty.", Enums.ErrorType.BadRequest);
             }
-            return await _repo.IsExistAsync(nationalNo);
+            var result = await _uow.personRepository
+                .IsExistAsync(p => p.NationalNo == nationalNo);
+            return result
+                ? Result<bool>.Success(true)
+                : Result<bool>.Failure("Person does not exist.", Enums.ErrorType.NotFound);
         }
 
-        public async Task<bool> UpdatePersonAsync(int personID,PersonDTO personDTO)
+        public async Task<Result<bool>> UpdatePersonAsync(int personID,PersonDTO personDTO)
         {
-            if(personDTO is null)
+            if (personDTO is null || personID <= 0) 
             {
-                throw new ArgumentNullException(nameof(personDTO), "Person DTO cannot be null.");
+                return Result<bool>.Failure("Person DTO cannot be null or id must greater then 0"
+                    , Enums.ErrorType.BadRequest);
             }
-            var person = await _repo.FindAsync(personID);
-            if (person is null)
+            try
             {
-                throw new ArgumentNullException(nameof(person), "Person not found.");
+                var person = await _uow.personRepository.FindAsync(p => p.PersonID == personID);
+                if (person is null)
+                {
+                    return Result<bool>.Failure("Person not found.", Enums.ErrorType.NotFound);
+                }
+                _mapper.Map(personDTO, person);
+                _uow.personRepository.Update(person);
+                return await _uow.SaveChangesAsync()
+                    ? Result<bool>.Success(true)
+                    : Result<bool>.Failure("Failed to update person.", Enums.ErrorType.Conflict);
             }
-            _mapper.Map(personDTO, person);
-            return await _repo.UpdateAsync(person);
+            catch(Exception ex)
+            {
+                return Result<bool>.Failure($"An error occurred while saving to the " +
+                    $"data tp the  db {ex.Message}");
+            }
+           
         }
     }
 }
