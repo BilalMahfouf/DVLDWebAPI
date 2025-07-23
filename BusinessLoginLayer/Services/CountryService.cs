@@ -1,6 +1,8 @@
 ﻿using AutoMapper;
+using Core.Common;
 using Core.DTOs.Country;
 using Core.Interfaces.Repositories.Common;
+using Core.Shared;
 using DataAccessLayer;
 using System;
 using System.Collections.Generic;
@@ -20,11 +22,25 @@ namespace BusinessLoginLayer.Services
             _repo = repo;
             _mapper = mapper;
         }
-        public async Task<IEnumerable<ReadCountryDTO>> GetAllCountriesAsync()
+        public async Task<Result<IEnumerable<ReadCountryDTO>>> GetAllCountriesAsync()
         {
-            var countries = await _repo.GetAllAsync();
-            var readCounteisDTO=_mapper.Map<IEnumerable<ReadCountryDTO>>(countries);
-            return readCounteisDTO;
+           try
+            {
+                var countries = await _repo.GetAllAsync();
+                if (countries is null || !countries.Any())
+                {
+                    return Result<IEnumerable<ReadCountryDTO>>.
+                        Failure("No countries found.", Enums.ErrorType.NotFound);
+                }
+                return Result<IEnumerable<ReadCountryDTO>>.
+                    Success(_mapper.Map<IEnumerable<ReadCountryDTO>>(countries));
+            }
+            catch(Exception ex)
+            {
+                return Result<IEnumerable<ReadCountryDTO>>.
+                    Failure($"An error occurred while retrieving data from the DB: {ex.Message}",
+                    Enums.ErrorType.InternalServerError);
+            }
         }
     }
 }
