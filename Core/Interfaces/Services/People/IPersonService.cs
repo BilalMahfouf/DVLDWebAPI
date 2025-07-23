@@ -10,14 +10,14 @@ namespace Core.Interfaces.Services.People
 {
     public interface IPersonService
     {
-        Task<Result<ReadPersonDTO?>> FindAsync(int  id);
-        Task<Result<ReadPersonDTO?>> FindAsync(string nationalNo);
-        Task<Result<int>> CreatePersonAsync(PersonDTO personDTO);
-        Task<Result<bool>> UpdatePersonAsync(int personID,PersonDTO personDTO);
-        Task<Result<bool>> DeletePersonAsync(int id);
-        Task<Result<bool>> IsExistAsync(int id);
-        Task<Result<bool>> IsExistAsync(string nationalNo);
-        Task<Result<IEnumerable<ReadPersonDTO>>> GetAllAsync();
+        Task<GenericResult<ReadPersonDTO?>> FindAsync(int  id);
+        Task<GenericResult<ReadPersonDTO?>> FindAsync(string nationalNo);
+        Task<GenericResult<int>> CreatePersonAsync(PersonDTO personDTO);
+        Task<Result> UpdatePersonAsync(int personID,PersonDTO personDTO);
+        Task<Result> DeletePersonAsync(int id);
+        Task<Result> IsExistAsync(int id);
+        Task<Result> IsExistAsync(string nationalNo);
+        Task<GenericResult<IEnumerable<ReadPersonDTO>>> GetAllAsync();
 
 
     }

@@ -11,6 +11,6 @@ namespace Core.Interfaces.Repositories.Applications
 {
     public interface IApplicationRepository:IRepository<Application>
     {
-        Task<Result<bool>> IsExistAsync(int applicationID);
+        Task<GenericResult<bool>> IsExistAsync(int applicationID);
     }
 }

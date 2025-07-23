@@ -22,22 +22,22 @@ namespace BusinessLoginLayer.Services
             _repo = repo;
             _mapper = mapper;
         }
-        public async Task<Result<IEnumerable<ReadCountryDTO>>> GetAllCountriesAsync()
+        public async Task<GenericResult<IEnumerable<ReadCountryDTO>>> GetAllCountriesAsync()
         {
            try
             {
                 var countries = await _repo.GetAllAsync();
                 if (countries is null || !countries.Any())
                 {
-                    return Result<IEnumerable<ReadCountryDTO>>.
+                    return GenericResult<IEnumerable<ReadCountryDTO>>.
                         Failure("No countries found.", Enums.ErrorType.NotFound);
                 }
-                return Result<IEnumerable<ReadCountryDTO>>.
+                return GenericResult<IEnumerable<ReadCountryDTO>>.
                     Success(_mapper.Map<IEnumerable<ReadCountryDTO>>(countries));
             }
             catch(Exception ex)
             {
-                return Result<IEnumerable<ReadCountryDTO>>.
+                return GenericResult<IEnumerable<ReadCountryDTO>>.
                     Failure($"An error occurred while retrieving data from the DB: {ex.Message}",
                     Enums.ErrorType.InternalServerError);
             }

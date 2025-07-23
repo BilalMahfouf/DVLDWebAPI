@@ -12,12 +12,12 @@ namespace BusinessLoginLayer.Helpers
 {
     public static class RelationshipValidator
     {
-        public static async Task<Result<bool>> ValidateForCreateUserAsync
+        public static async Task<GenericResult<bool>> ValidateForCreateUserAsync
             (this CreateUserDTO userDto, IUnitOfWork uow)
         {
             var result = await uow.userRepository.IsExistAsync(u => u.PersonID == userDto.PersonID);
-            return result ? Result<bool>.Failure
-                ("this user already exist", Enums.ErrorType.Conflict) : Result<bool>.Success(true);
+            return result ? GenericResult<bool>.Failure
+                ("this user already exist", Enums.ErrorType.Conflict) : GenericResult<bool>.Success(true);
         }
     }
 }

@@ -28,70 +28,70 @@ namespace BusinessLoginLayer.Services
             _uow = uow;
         }
 
-        private async Task<Result<bool>> _UpdateUserIsActiveStatus(int id,bool isActive)
+        private async Task<Result> _UpdateUserIsActiveStatus(int id,bool isActive)
         {
             if(id <= 0)
          {
-                return Result<bool>.Failure("ID must be greater than zero.");
+                return Result.Failure("ID must be greater than zero.");
             }
             try
             {
                 var user = await _uow.userRepository.FindAsync(u=>u.UserID==id);
                 if (user is null)
                 {
-                    return Result<bool>.Failure("User not found", Enums.ErrorType.NotFound);
+                    return Result.Failure("User not found", Enums.ErrorType.NotFound);
                 }
                 user.IsActive = isActive;
                 _uow.userRepository.Update(user);
                 var result = await _uow.SaveChangesAsync();
-                return result ? Result<bool>.Success(true) : Result<bool>.Failure(
+                return result ? Result.Success : Result.Failure(
                     "Can't updated user is active status", Enums.ErrorType.Conflict);
             }
             catch(Exception ex)
             {
-                return Result<bool>.Failure("an error occurred while saving data " +
+                return Result.Failure("an error occurred while saving data " +
                     $"to the DB ex {ex.Message}",Enums.ErrorType.InternalServerError);
             }
             
 
         }
-        public async Task<Result<bool>> ActivateAsync(int id)
+        public async Task<Result> ActivateAsync(int id)
         {
             return await _UpdateUserIsActiveStatus(id, true);
         }
 
-        public async Task<Result<bool>> CanCreateUserAsync(int personID)
+        public async Task<Result> CanCreateUserAsync(int personID)
         {
             if (personID <= 0)
             {
-                Result<bool>.Failure("personID must be greater than zero.",
+                Result.Failure("personID must be greater than zero.",
                      Enums.ErrorType.BadRequest);
             }
             try
             {
                 var isExist = await _uow.userRepository.IsExistAsync(u => u.PersonID == personID);
                 return isExist ?
-                    Result<bool>.Failure("User already exists for this personID.",
+                    Result.Failure("User already exists for this personID.",
                     Enums.ErrorType.Conflict) :
-                    Result<bool>.Success(true);
+                    Result.Success;
             }
             catch (Exception ex)
             {
-                return Result<bool>.Failure("an error occurred while retrieving data " +
+                return Result.Failure("an error occurred while retrieving data " +
                     $"from the DB ex {ex.Message}", Enums.ErrorType.InternalServerError);
             }
         }
 
-        public async Task<Result<int>> CreateUserAsync(CreateUserDTO userDTO)
+        public async Task<GenericResult<int>> CreateUserAsync(CreateUserDTO userDTO)
         {
             if(userDTO == null)
             {
-                return Result<int>.Failure("user dto can't be null", Enums.ErrorType.BadRequest);
+                return GenericResult<int>.Failure("user dto can't be null", Enums.ErrorType.BadRequest);
             }
             var createUserValidationResult=await CanCreateUserAsync(userDTO.PersonID);
             if(!createUserValidationResult.IsSuccess)
             {
-                return Result<int>.Failure(createUserValidationResult.ErrorMessage,
+                return GenericResult<int>.Failure(createUserValidationResult.ErrorMessage,
                     createUserValidationResult.ErrorType);
             }
             try
@@ -103,90 +103,90 @@ namespace BusinessLoginLayer.Services
                 {
 
                 }
-                return result ? Result<int>.Success(user.UserID) : Result<int>.
+                return result ? GenericResult<int>.Success(user.UserID) : GenericResult<int>.
                     Failure("can't add this user", Enums.ErrorType.Conflict);
             }
              catch(Exception ex)
             {
-                return Result<int>.Failure("an error occurred while saving data " +
+                return GenericResult<int>.Failure("an error occurred while saving data " +
                     $"to the DB ex {ex.Message}", Enums.ErrorType.InternalServerError);
             }
         }
 
-        public async Task<Result<bool>> DeActivateAsync(int id)
+        public async Task<Result> DeActivateAsync(int id)
         {
             return await _UpdateUserIsActiveStatus(id, false);
         }
 
-        public async Task<Result<bool>> DeleteUserAsync(int id)
+        public async Task<Result> DeleteUserAsync(int id)
         {
             if(id <= 0)
             {
-                Result<bool>.Failure("invalid id", Enums.ErrorType.BadRequest);
+                Result.Failure("invalid id", Enums.ErrorType.BadRequest);
             }
             try
             {
               _uow.userRepository.Delete(id);
-                return await _uow.SaveChangesAsync() ? Result<bool>.Success(true)
-                    : Result<bool>.Failure
+                return await _uow.SaveChangesAsync() ? Result.Success
+                    : Result.Failure
                     ("can't delete this user", Enums.ErrorType.Conflict);
             }
             catch (Exception ex)
             {
-                return Result<bool>.Failure("an error occurred while saving data " +
+                return Result.Failure("an error occurred while saving data " +
                     $"to the DB ex {ex.Message}", Enums.ErrorType.InternalServerError);
             }
         }
 
-        public async Task<Result<ReadUserDTO?>> FindByIDAsync(int id)
+        public async Task<GenericResult<ReadUserDTO?>> FindByIDAsync(int id)
         {
             if(id <= 0)
             {
-                return Result<ReadUserDTO?>.Failure("invalid user id", Enums.ErrorType.BadRequest);
+                return GenericResult<ReadUserDTO?>.Failure("invalid user id", Enums.ErrorType.BadRequest);
             }
             try
             {
                 var user = await _uow.userRepository.FindAsync(u => u.UserID == id);
                 if(user is null)
                 {
-                    return Result<ReadUserDTO?>.Failure("User not found.", Enums.ErrorType.NotFound);
+                    return GenericResult<ReadUserDTO?>.Failure("User not found.", Enums.ErrorType.NotFound);
                 }
-                return Result<ReadUserDTO?>.Success(_mapper.Map<ReadUserDTO>(user));
+                return GenericResult<ReadUserDTO?>.Success(_mapper.Map<ReadUserDTO>(user));
             }
             catch (Exception ex)
             {
-                return Result<ReadUserDTO?>.Failure("an error occurred while retrieving data " +
+                return GenericResult<ReadUserDTO?>.Failure("an error occurred while retrieving data " +
                     $"from the DB ex {ex.Message}", Enums.ErrorType.InternalServerError);
             }
 
 
         }
 
-        public async Task<Result<IEnumerable<ReadUserDTO>>> GetAllAsync()
+        public async Task<GenericResult<IEnumerable<ReadUserDTO>>> GetAllAsync()
         {
             try
             {
                 var users = await _uow.userRepository.GetAllAsync();
                 if( users is null || !users.Any())
                 {
-                    return Result<IEnumerable<ReadUserDTO>>
+                    return GenericResult<IEnumerable<ReadUserDTO>>
                         .Failure("Users not found.", Enums.ErrorType.NotFound);
                 }
-                return Result<IEnumerable<ReadUserDTO>>.Success(_mapper.Map
+                return GenericResult<IEnumerable<ReadUserDTO>>.Success(_mapper.Map
                     <IEnumerable<ReadUserDTO>>(users));
             }
             catch (Exception ex)
             {
-                return Result<IEnumerable<ReadUserDTO>>.Failure("an error occurred while retrieving data " +
+                return GenericResult<IEnumerable<ReadUserDTO>>.Failure("an error occurred while retrieving data " +
                     $"from the DB ex {ex.Message}", Enums.ErrorType.InternalServerError);
             }
         }
 
-        public async Task<Result<bool>> UpdateUserAsync(int userID,UpdateUserDTO userDTO)
+        public async Task<Result> UpdateUserAsync(int userID,UpdateUserDTO userDTO)
         {
             if(userID <= 0 || userDTO is null)
             {
-               return Result<bool>.Failure("Invalid user ID or userDTO."
+               return Result.Failure("Invalid user ID or userDTO."
                    , Enums.ErrorType.BadRequest);
             }
            try
@@ -194,17 +194,17 @@ namespace BusinessLoginLayer.Services
                 var user = await _uow.userRepository.FindAsync(u => u.UserID == userID);
                 if(user is null)
                 {
-                    return Result<bool>.Failure("User not found.", Enums.ErrorType.NotFound);
+                    return Result.Failure("User not found.", Enums.ErrorType.NotFound);
                 }
                 _mapper.Map(userDTO, user);
                 _uow.userRepository.Update(user);
                 var result = await _uow.SaveChangesAsync();
-                return result ? Result<bool>.Success(true) : Result<bool>.
+                return result ? Result.Success : Result.
                     Failure("can't update this user", Enums.ErrorType.Conflict);
             }
             catch (Exception ex)
             {
-                return Result<bool>.Failure("an error occurred while saving data " +
+                return Result.Failure("an error occurred while saving data " +
                     $"to the DB ex {ex.Message}", Enums.ErrorType.InternalServerError);
             }
 

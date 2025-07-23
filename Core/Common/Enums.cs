@@ -35,10 +35,12 @@ namespace Core.Common
         }
         public enum ErrorType
         {
+            Success = 0,
             NotFound = 1,
             InternalServerError = 4,
             Conflict = 5,
             BadRequest = 6
+            
         }
 
     }
