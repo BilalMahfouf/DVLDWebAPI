@@ -1,8 +1,12 @@
 ﻿using AutoMapper;
+using BusinessLoginLayer.Helpers;
+using Core.Common;
 using Core.DTOs.License;
+using Core.Interfaces;
 using Core.Interfaces.Repositories.Common;
 using Core.Interfaces.Services.Applications;
 using Core.Interfaces.Services.Licenses;
+using Core.Shared;
 using DataAccessLayer;
 using System;
 using System.Collections.Generic;
@@ -15,102 +19,182 @@ namespace BusinessLoginLayer.Services.Licenses
 {
     public class InternationalLicenseService : IInternationalLicenseService
     {
-        private readonly IRepository<InternationalLicense> _internationalLicenseRepository;
+        private readonly IUnitOfWork _uow;
         private readonly ILicenseService _licenseService;
         private readonly IApplicationService _applicationService;
         private readonly IMapper _mapper;
 
-        public InternationalLicenseService(IMapper mapper,
-            IRepository<InternationalLicense> internationalLicenseRepository
-            , ILicenseService licenseService, IApplicationService applicationService)
+        public InternationalLicenseService(IMapper mapper, ILicenseService licenseService
+            , IApplicationService applicationService, IUnitOfWork uow)
         {
             _mapper = mapper;
-            _internationalLicenseRepository = internationalLicenseRepository;
             _licenseService = licenseService;
             _applicationService = applicationService;
+            _uow = uow;
         }
 
-        private async Task<bool> _UpdateStatus(int licenseID, bool isActive)
+        private async Task<Result> _UpdateStatus(int id, bool isActive)
         {
-           if(licenseID <= 0)
+         try
             {
-                throw new ArgumentOutOfRangeException(nameof(licenseID));
+                if (id <= 0)
+                {
+                    return Result.Failure("Invalid License ID", Enums.ErrorType.BadRequest);
+                }
+                var internationalLicense = await _uow.internationalLicenseRepository.
+                     FindAsync(l => l.InternationalLicenseID == id);
+                if (internationalLicense is null)
+                {
+                    return Result.Failure("International license not found.", Enums.ErrorType.NotFound);
+                }
+                internationalLicense.IsActive = isActive;
+                _uow.internationalLicenseRepository.Update(internationalLicense);
+                var result = await _uow.SaveChangesAsync();
+                if (result)
+                {
+                    return Result.Success;
+                }
+                return Result.Failure("Failed to update international license status."
+                    , Enums.ErrorType.Conflict);
             }
-           var internationalLicense=await _internationalLicenseRepository.FindAsync(licenseID);
-            if (internationalLicense is null)
+            catch (Exception ex)
             {
-                throw new ArgumentException(nameof(internationalLicense));
+                return Result.Failure($"An error occurred while updating license status: {ex.Message}"
+                    , Enums.ErrorType.InternalServerError);
             }
-            internationalLicense.IsActive = isActive;
-            return await _internationalLicenseRepository.UpdateAsync(internationalLicense);
+
         }
 
-        public async Task<bool> ActivateAsync(int licenseID)
+        public async Task<Result> ActivateAsync(int id)
         {
-            return await _UpdateStatus(licenseID, true);
+            return await _UpdateStatus(id, true);
         }
 
-        public async Task<bool> DeActivateAsync(int licenseID)
+        public async Task<Result> DeActivateAsync(int id)
         {
-            return await _UpdateStatus(licenseID,false);
+            return await _UpdateStatus(id,false);
         }
 
-        public async Task<bool> DeleteInternationalLicenseAsync(int licenseID)
+        public async Task<Result> DeleteInternationalLicenseAsync(int id)
         {
-           if(licenseID <= 0)
+           if(id <= 0)
             {
-                throw new ArgumentOutOfRangeException(nameof(licenseID));
+                return Result.Failure("ID must be greater than zero."
+                    ,Enums.ErrorType.BadRequest);
             }
-           return await _internationalLicenseRepository.DeleteAsync(licenseID);
+           try
+            {
+                if (!(await _uow.internationalLicenseRepository.IsExistAsync
+                    (i => i.InternationalLicenseID == id))) 
+                {
+                    return Result.Failure("International license does not exist."
+                        , Enums.ErrorType.BadRequest);
+                }
+                _uow.internationalLicenseRepository.Delete(id);
+                var result = await _uow.SaveChangesAsync();
+                if(result)
+                {
+                    return Result.Success;
+                }
+                return Result.Failure("Failed to delete international license."
+                    , Enums.ErrorType.Conflict);
+            }
+            catch (Exception ex)
+            {
+                return Result.Failure($"An error occurred while updating saving data to DB: {ex.Message}"
+                    , Enums.ErrorType.InternalServerError);
+            }
         }
 
-        public async Task<ReadInternationalLicenseDTO?> FindByIDAsync(int licenseID)
+        public async Task<GenericResult<ReadInternationalLicenseDTO?>>
+            FindByIDAsync(int id)
         {
-           if(licenseID <=0)
+           if(id <=0)
             {
-                throw new ArgumentOutOfRangeException(nameof(licenseID));
+                return GenericResult<ReadInternationalLicenseDTO?>
+                    .Failure("License ID must be greater than zero."
+                    , Enums.ErrorType.BadRequest);
             }
-            var license = await _internationalLicenseRepository.FindAsync(licenseID);
-            return license is null ? null : _mapper.Map<ReadInternationalLicenseDTO>(license);
+           try
+            {
+                var license = await _uow.internationalLicenseRepository
+                    .FindAsync(l => l.InternationalLicenseID == id);
+                if(license is null)
+                {
+                    return GenericResult<ReadInternationalLicenseDTO?>
+                        .Failure("International license not found.", Enums.ErrorType.NotFound);
+                }
+                return GenericResult<ReadInternationalLicenseDTO?>
+                    .Success(_mapper.Map<ReadInternationalLicenseDTO>(license));
+            }
+            catch (Exception ex)
+            {
+                return GenericResult<ReadInternationalLicenseDTO?>
+                    .Failure($"An error occurred while retrieving data from the DB: " +
+                    $"{ex.Message}", Enums.ErrorType.InternalServerError);
+            }
         }
 
-        public async Task<IEnumerable<ReadInternationalLicenseDTO>> GetAllAsync()
+        public async Task<GenericResult<IEnumerable<ReadInternationalLicenseDTO>>>
+            GetAllAsync()
         {
-            var licenses = await _internationalLicenseRepository.GetAllAsync();
-            if(licenses is null || !licenses.Any())
+           try
             {
-                return Enumerable.Empty<ReadInternationalLicenseDTO>();
+                var licenses =await _uow.internationalLicenseRepository.GetAllAsync();
+                if(licenses is null || !licenses.Any())
+                {
+                    return GenericResult<IEnumerable<ReadInternationalLicenseDTO>>
+                        .Failure("No international licenses found.", Enums.ErrorType.NotFound);
+                }
+                return GenericResult<IEnumerable<ReadInternationalLicenseDTO>>.Success
+                    (_mapper.Map<IEnumerable<ReadInternationalLicenseDTO>>(licenses));
             }
-            return _mapper.Map<IEnumerable<ReadInternationalLicenseDTO>>(licenses);
+            catch (Exception ex)
+            {
+                return GenericResult<IEnumerable<ReadInternationalLicenseDTO>>
+                    .Failure($"An error occurred while retrieving data from the DB: {ex.Message}", Enums.ErrorType.InternalServerError);
+            }
         }
 
-        public async Task<int> IssueInternationalLicense(InternationalLicenseDTO licenseDTO)
+        public async Task<GenericResult<int>> IssueInternationalLicense
+            (InternationalLicenseDTO licenseDTO)
         {
-           if(licenseDTO is null)
+            var validationResult = await licenseDTO
+                 .ValidateForCreateInternationalLicenseAsync(_uow);
+            if (!validationResult.IsSuccess)
             {
-                throw new ArgumentNullException(nameof(licenseDTO));
+                return GenericResult<int>.Failure
+                    (validationResult.ErrorMessage, validationResult.ErrorType);
             }
-           if(await _applicationService.IsExistAsync(licenseDTO.ApplicationID) is false)
+                try
             {
-                throw new ArgumentException("Application does not exist.", nameof(licenseDTO.ApplicationID));
+                var license = _mapper.Map<InternationalLicense>(licenseDTO);
+                license.IsActive = true;
+                license.IssueDate = DateTime.UtcNow;
+                // Assuming 5 years validity
+                license.ExpirationDate = license.IssueDate.AddYears(5);
+                var completeAppResult = await _applicationService.CompleteApplicationAsync
+                        (licenseDTO.ApplicationID);
+                if (!completeAppResult.IsSuccess)
+                {
+                    return GenericResult<int>.Failure(completeAppResult.ErrorMessage,
+                        completeAppResult.ErrorType);
+                }
+                _uow.internationalLicenseRepository.Add(license);
+                var result = await _uow.SaveChangesAsync();
+                if (result)
+                {
+                    return GenericResult<int>.Success(license.InternationalLicenseID);
+                }
+                return GenericResult<int>.Failure("Failed to issue international license.",
+                    Enums.ErrorType.Conflict);
             }
-            if (await _licenseService.IsLicenseExistAndActiveAsync
-                (licenseDTO.IssuedUsingLocalLicenseID) is false) 
+            catch (Exception ex)
             {
-                throw new ArgumentException("License does not exist or is not active."
-                    , nameof(licenseDTO.IssuedUsingLocalLicenseID));
+                return GenericResult<int>
+                    .Failure($"An error occurred while saving data to the DB: " +
+                    $"{ex.Message}", Enums.ErrorType.InternalServerError);
             }
-            if (await _applicationService.CompleteApplicationAsync
-                (licenseDTO.ApplicationID) is false) 
-            {
-                throw new InvalidOperationException("Application could not be completed.");
-            }
-            var license = _mapper.Map<InternationalLicense>(licenseDTO);
-            license.IsActive = true;
-            license.IssueDate=DateTime.UtcNow;
-            // Assuming 5 years validity
-            license.ExpirationDate = license.IssueDate.AddYears(5);
-            return await _internationalLicenseRepository.AddAsync(license);
         }
 
     }

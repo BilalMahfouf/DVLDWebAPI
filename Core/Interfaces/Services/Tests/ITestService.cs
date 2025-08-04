@@ -1,5 +1,6 @@
 ﻿using Core.Common;
 using Core.DTOs.Test;
+using Core.Shared;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,9 +11,9 @@ namespace Core.Interfaces.Services.Tests
 {
     public interface ITestService
     {
-        Task<TestDTO?> FindByIDAsync(int id);
-        Task<int> CreateTestAsync(TestDTO testDTO);
-        Task<bool> DeleteTestAsync(int id);
+        Task<GenericResult<TestDTO>> FindByIDAsync(int id);
+        Task<GenericResult<int>> CreateTestAsync(TestDTO testDTO);
+        Task<Result> DeleteTestAsync(int id);
        
     }
 }

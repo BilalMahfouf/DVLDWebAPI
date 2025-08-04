@@ -2,11 +2,9 @@
 using Core.Common;
 using Core.DTOs.User;
 using Core.Interfaces;
-using Core.Interfaces.Repositories.Users;
 using Core.Interfaces.Services.Users;
 using Core.Shared;
 using DataAccessLayer;
-using DataAccessLayer.Repositories.User;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Metadata.Conventions;
 using System;

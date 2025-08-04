@@ -27,10 +27,7 @@ namespace DataAccessLayer.Repositories.Common
             _dbSet.Remove(entity);
         }
 
-        public async Task<bool> IsExistAsync(Expression<Func<TEntity,bool>> filter)
-        {
-        return await _dbSet.AnyAsync(filter);
-        }
+        
 
         
     }

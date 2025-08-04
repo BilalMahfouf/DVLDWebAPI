@@ -14,5 +14,6 @@ namespace Core.Interfaces.Repositories.Common
         void  Update(TEntity entity);
         Task<TEntity?> FindAsync(Expression<Func<TEntity, bool>> filter, string
             includeProperties = "");
+        Task<bool> IsExistAsync(Expression<Func<TEntity, bool>> filter);
     }
 }

@@ -1,7 +1,9 @@
 ﻿using Core.Interfaces;
+using Core.Interfaces.Repositories.Applications;
 using Core.Interfaces.Repositories.Common;
 using Core.Shared;
 using DataAccessLayer.Data;
+using DataAccessLayer.Repositories.Application;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -30,7 +32,7 @@ namespace DataAccessLayer.Repositories.Common
         private IRepository<Driver>? _driverRepository;
         private IRepository<InternationalLicense>? _internationalLicenseRepository;
         private IRepository<DataAccessLayer.License>? _licenseRepository;
-        private IRepository<LocalDrivingLicenseApplication>? _localDrivingLicenseApplicationRepository;
+        private ILocalDrivingLicenseApplicationRepository? _localDrivingLicenseApplicationRepository;
         private IRepository<TestAppointment>? _testAppointmentRepository;
 
         public IReadUpdateRepository<Country> countryRepository 
@@ -70,9 +72,10 @@ namespace DataAccessLayer.Repositories.Common
         public IRepository<DataAccessLayer.License> licenseRepository 
             =>  _licenseRepository ??= new Repository<DataAccessLayer.License>(_context);
 
-        public IRepository<LocalDrivingLicenseApplication> 
-            localDrivingLicenseApplicationRepository 
-            => _localDrivingLicenseApplicationRepository??= new Repository<LocalDrivingLicenseApplication>(_context);
+        public ILocalDrivingLicenseApplicationRepository
+            localDrivingLicenseApplicationRepository
+            => _localDrivingLicenseApplicationRepository ??=
+            new LocalDrivingLicenseApplicationRepository(_context);
 
         public IRepository<TestAppointment> testAppointmentRepository
             => _testAppointmentRepository??= new Repository<TestAppointment>(_context);

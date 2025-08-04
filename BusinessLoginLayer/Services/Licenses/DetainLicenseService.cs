@@ -1,9 +1,14 @@
 ﻿using AutoMapper;
+using BusinessLoginLayer.Helpers;
 using BusinessLoginLayer.Services.Applications;
+using Core.Common;
+using Core.DTOs.Application;
 using Core.DTOs.Detain;
+using Core.Interfaces;
 using Core.Interfaces.Repositories.Common;
 using Core.Interfaces.Services.Applications;
 using Core.Interfaces.Services.Licenses;
+using Core.Shared;
 using DataAccessLayer;
 using System;
 using System.Collections.Generic;
@@ -16,92 +21,174 @@ namespace BusinessLoginLayer.Services.Licenses
     public class DetainLicenseService : IDetainLicenseService
     {
 
-        private readonly IRepository<DetainedLicense> _detainedLicenseRepository;
+        private readonly IUnitOfWork _uow;
         private readonly IApplicationService _applicationService;
         private readonly IMapper _mapper;
-        private readonly ILicenseService _licenseService;
 
-        public DetainLicenseService(IRepository<DetainedLicense> detainLicenseRepositry, IApplicationService applicationService, IMapper mapper, ILicenseService licenseService)
+        public DetainLicenseService( IApplicationService applicationService
+            , IMapper mapper, IUnitOfWork uow)
         {
-            _detainedLicenseRepository = detainLicenseRepositry;
             _applicationService = applicationService;
             _mapper = mapper;
-            _licenseService = licenseService;
+            _uow = uow;
         }
 
-        public async Task<int> CreateDetainedLicenseAsync(DetainLicenseDTO detainedLicenseDTO)
+        public async Task<GenericResult<int>> CreateDetainedLicenseAsync
+            (DetainLicenseDTO detainedLicenseDTO)
         {
-            if(detainedLicenseDTO is null)
+            var validationResult = await detainedLicenseDTO
+                .ValidateForCreateDetainedLicenseAsync(_uow);
+            if(!validationResult.IsSuccess)
             {
-                throw new ArgumentNullException(nameof(detainedLicenseDTO));
+                return GenericResult<int>.Failure(validationResult.ErrorMessage,
+                    validationResult.ErrorType);
             }
-            if(await _licenseService.IsLicenseExistAndActiveAsync(detainedLicenseDTO.LicenseID) is false)
+
+            try
             {
-                throw new ArgumentException(nameof(detainedLicenseDTO.LicenseID));
+                var detainedLicense = _mapper.Map<DetainedLicense>(detainedLicenseDTO);
+                detainedLicense.IsReleased = false;
+                detainedLicense.DetainDate = DateTime.UtcNow;
+                _uow.detainedLicenseRepository.Add(detainedLicense);
+                var result = await _uow.SaveChangesAsync();
+                if (result)
+                {
+                    return GenericResult<int>
+                        .Success(detainedLicense.DetainID);
+                }
+                return GenericResult<int>.Failure("Failed to create detained license",
+                    Enums.ErrorType.Conflict);
             }
-            
-            var detainedLicense = _mapper.Map<DetainedLicense>(detainedLicenseDTO);
-            detainedLicense.IsReleased = false;
-            detainedLicense.DetainDate = DateTime.UtcNow;
-            return await _detainedLicenseRepository.AddAsync(detainedLicense);
+            catch(Exception ex)
+            {
+                return GenericResult<int>.Failure("An error occurred while saving data " +
+                    $"to the DB ex {ex.Message}", Enums.ErrorType.InternalServerError);
+            }
+
         }
 
-        public async Task<bool> DeleteDetainedLicenseAsync(int id)
+        public async Task<Result> DeleteDetainedLicenseAsync(int id)
         {
            if(id<=0)
             {
-                throw new ArgumentOutOfRangeException(nameof(id));
+                return Result.Failure("Invalid ID", Enums.ErrorType.BadRequest);
             }
-            return await _detainedLicenseRepository.DeleteAsync(id);
+           try
+           {
+              if(!(await _uow.detainedLicenseRepository.IsExistAsync(d=>d.DetainID==id)))
+              {
+               return Result.Failure("Detained license not found"
+                   , Enums.ErrorType.NotFound);
+              }
+                _uow.detainedLicenseRepository.Delete(id);
+                var result = await _uow.SaveChangesAsync(); 
+                if(result)
+                {
+                    return Result.Success;
+                }
+                return Result.Failure("Failed to delete detained license"
+                    , Enums.ErrorType.Conflict);
+            }
+            catch (Exception ex)
+            {
+                return Result.Failure("an error occurred while saving data " +
+                    $"to the DB ex {ex.Message}", Enums.ErrorType.InternalServerError);
+            }
         }
 
-        public async Task<DetainLicenseDTO?> FindAsync(int id)
+        public async Task<GenericResult<DetainLicenseDTO?>> FindAsync(int id)
         {
             if (id <= 0)
             {
-                throw new ArgumentOutOfRangeException(nameof(id), "id must be greater then 0");
+                return GenericResult<DetainLicenseDTO?>.Failure("ID must be greater than zero.",
+                    Enums.ErrorType.BadRequest);
             }
-            var dLicense = await _detainedLicenseRepository.FindAsync(id);
-            return dLicense is null ? null : _mapper.Map<DetainLicenseDTO>(dLicense);
+            try
+            {
+                var detainedLicense = await _uow.detainedLicenseRepository.FindAsync
+                    (d => d.DetainID == id);
+                if(detainedLicense is null)
+                {
+                    return GenericResult<DetainLicenseDTO?>.Failure("Detained license not found.",
+                        Enums.ErrorType.NotFound);
+                }
+                return GenericResult<DetainLicenseDTO?>
+                    .Success(_mapper.Map<DetainLicenseDTO>(detainedLicense));
+            }
+            catch (Exception ex)
+            {
+                return GenericResult<DetainLicenseDTO?>.Failure
+                    ("an error occurred while retrieving data " +
+                    $"from the DB ex {ex.Message}", Enums.ErrorType.InternalServerError);
+            }
 
         }
 
-        public async Task<IEnumerable<DetainLicenseDTO>> GetAllAsync()
+        public async Task<GenericResult<IEnumerable<DetainLicenseDTO>>> GetAllAsync()
         {
-            var dLicenses = await _detainedLicenseRepository.GetAllAsync();
-            if(dLicenses is null || !dLicenses.Any())
+            try
             {
-                return Enumerable.Empty<DetainLicenseDTO>();
+                var dLicenses = await _uow.detainedLicenseRepository.GetAllAsync();
+                if (dLicenses is null || !dLicenses.Any())
+                {
+                    return GenericResult<IEnumerable<DetainLicenseDTO>>
+                          .Failure("No detained licenses found.", Enums.ErrorType.NotFound);
+                }
+                return GenericResult<IEnumerable<DetainLicenseDTO>>
+                    .Success(_mapper.Map<IEnumerable<DetainLicenseDTO>>(dLicenses));
             }
-            return _mapper.Map<IEnumerable<DetainLicenseDTO>>(dLicenses);
+            catch(Exception ex)
+            {
+                return GenericResult<IEnumerable<DetainLicenseDTO>>
+                    .Failure($"An error occurred while retrieving data from the DB: {ex.Message}",
+                    Enums.ErrorType.InternalServerError);
+            }
+           
         }
 
-        public async Task<bool> ReleaseLicenseAsync(UpdateDetainedLicenseDTO releaseDTO)
+        public async Task<Result> ReleaseLicenseAsync
+            (UpdateDetainedLicenseDTO releaseDTO)
         {
-            if(releaseDTO is null)
+            var validationResult = await releaseDTO
+                .ValidateForUpdateDetainedLicenseAsync(_uow);
+            if(!validationResult.IsSuccess)
             {
-                throw new ArgumentNullException(nameof(releaseDTO));
+                return Result.Failure(validationResult.ErrorMessage,
+                    validationResult.ErrorType);
             }
-            if(await _applicationService.IsExistAsync
-                (releaseDTO.ReleaseApplicationID) is false)
+            try
             {
-                throw new ArgumentException(nameof(releaseDTO.ReleaseApplicationID));
+                var detainedLicense = await _uow.detainedLicenseRepository.FindAsync
+                (d => d.DetainID == releaseDTO.DetainID);
+                if (detainedLicense is null)
+                {
+                    return Result.Failure("Detained license not found.",
+                        Enums.ErrorType.NotFound);
+                }
+                _mapper.Map(releaseDTO, detainedLicense);
+                detainedLicense.IsReleased = true;
+                detainedLicense.ReleaseDate = DateTime.UtcNow;
+                var completeAppResult = await _applicationService
+                     .CompleteApplicationAsync(releaseDTO.ReleaseApplicationID);
+                if (!completeAppResult.IsSuccess)
+                {
+                    return Result.Failure(completeAppResult.ErrorMessage,
+                        completeAppResult.ErrorType);
+                }
+                _uow.detainedLicenseRepository.Update(detainedLicense);
+                var result = await _uow.SaveChangesAsync();
+                if (result)
+                {
+                    return Result.Success;
+                }
+                return Result.Failure("Failed to release detained license",
+                    Enums.ErrorType.Conflict);
             }
-            if(await _applicationService.CompleteApplicationAsync
-                (releaseDTO.ReleaseApplicationID) is false)
+            catch (Exception ex)
             {
-                throw new InvalidOperationException(nameof
-                    (releaseDTO.ReleaseApplicationID));
+                return Result.Failure("An error occurred while saving data " +
+                    $"to the DB ex {ex.Message}", Enums.ErrorType.InternalServerError);
             }
-            var detainedLicense = await _detainedLicenseRepository.FindAsync
-                (releaseDTO.DetainID);
-            if(detainedLicense is null )
-            {
-                throw new ArgumentException(nameof(detainedLicense));
-            }
-            detainedLicense.IsReleased = true;
-            detainedLicense.ReleaseDate = DateTime.UtcNow;
-            return await _detainedLicenseRepository.UpdateAsync(detainedLicense);
         }
     }
 }

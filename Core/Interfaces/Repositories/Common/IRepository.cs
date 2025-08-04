@@ -12,6 +12,6 @@ namespace Core.Interfaces.Repositories.Common
     {
         void Add (TEntity entity);
         void Delete (int entity);
-        Task<bool> IsExistAsync(Expression<Func<TEntity, bool>> filter);
+        
     }
 }

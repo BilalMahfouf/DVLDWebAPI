@@ -2,7 +2,6 @@
 using Core.Common;
 using Core.DTOs.Person;
 using Core.Interfaces;
-using Core.Interfaces.Repositories.People;
 using Core.Interfaces.Services.People;
 using Core.Shared;
 using DataAccessLayer;

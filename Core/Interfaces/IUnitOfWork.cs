@@ -1,4 +1,5 @@
-﻿using Core.Interfaces.Repositories.Common;
+﻿using Core.Interfaces.Repositories.Applications;
+using Core.Interfaces.Repositories.Common;
 using Core.Shared;
 using DataAccessLayer;
 using System;
@@ -23,7 +24,7 @@ namespace Core.Interfaces
         IRepository<Driver> driverRepository { get; }
         IRepository <InternationalLicense> internationalLicenseRepository { get; }
         IRepository<License> licenseRepository { get; }
-        IRepository<LocalDrivingLicenseApplication> localDrivingLicenseApplicationRepository { get;}
+        ILocalDrivingLicenseApplicationRepository localDrivingLicenseApplicationRepository { get;}
         IRepository<TestAppointment> testAppointmentRepository { get; }
         
 

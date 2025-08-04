@@ -60,5 +60,9 @@ namespace DataAccessLayer.Repositories.Common
             }
             return await query.FirstOrDefaultAsync(filter);
         }
+        public async Task<bool> IsExistAsync(Expression<Func<TEntity, bool>> filter)
+        {
+            return await _dbSet.AnyAsync(filter);
+        }
     }
 }

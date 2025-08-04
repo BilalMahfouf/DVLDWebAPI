@@ -1,9 +1,12 @@
 ﻿using AutoMapper;
+using BusinessLoginLayer.Helpers;
 using Core.Common;
 using Core.DTOs.License;
-using Core.Interfaces.Repositories.Licenses;
+using Core.DTOs.Test;
+using Core.Interfaces;
 using Core.Interfaces.Services.Applications;
 using Core.Interfaces.Services.Licenses;
+using Core.Shared;
 using DataAccessLayer;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using System;
@@ -14,190 +17,288 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
+
 namespace BusinessLoginLayer.Services.Licenses
 {
     public class LicenseService : ILicenseService
     {
-        private readonly ILicenseRepository _licenseRepository;
+        private readonly IUnitOfWork _uow;
         private readonly IMapper _mapper;
         private readonly IApplicationService _applicationService;
-        private readonly LicenseClassService _licenseClassService;
-        public LicenseService(ILicenseRepository licenseRepository, IMapper mapper
-            , IApplicationService applicationService, LicenseClassService licenseClassService)
+
+        public LicenseService(IUnitOfWork uow, IMapper mapper, IApplicationService applicationService)
         {
-            _licenseRepository = licenseRepository;
+            _uow = uow;
             _mapper = mapper;
             _applicationService = applicationService;
-            _licenseClassService = licenseClassService;
         }
 
-
-        private async Task<bool> _UpdateLicenseStatus(int id,bool isActive)
+        private async Task<Result> _UpdateLicenseStatus(int id,bool isActive)
         {
             if (id <= 0)
             {
-                throw new ArgumentOutOfRangeException(nameof(id), "ID must be greater than zero.");
+                return Result.Failure("ID must be greater than zero."
+                    ,Enums.ErrorType.BadRequest);
             }
-            var license = await _licenseRepository.FindAsync(id);
-            if (license is null)
+            try
             {
-                throw new ArgumentException(nameof(license));
+                var license = await _uow.licenseRepository.FindAsync(l => l.LicenseID == id);
+                if (license is null)
+                {
+                    return Result.Failure("License not found."
+                        , Enums.ErrorType.NotFound);
+                }
+                license.IsActive = isActive;
+                _uow.licenseRepository.Update(license);
+                var result = await _uow.SaveChangesAsync();
+                if (result)
+                {
+                    return Result.Success;
+
+                }
+                return Result.Failure("Failed to update license status."
+                    , Enums.ErrorType.Conflict);
             }
-            license.IsActive = isActive;
-            return await _licenseRepository.UpdateAsync(license);
+            catch (Exception ex)
+            {
+                return Result.Failure($"An error occurred while updating license status: {ex.Message}"
+                    , Enums.ErrorType.InternalServerError);
+            }
+
         }
-        public async Task<bool> ActivateLicenseAsync(int id)
+        public async Task<Result> ActivateLicenseAsync(int id)
         {
             return await _UpdateLicenseStatus(id, true);
         }
 
-        public async Task<bool> DeActivateLicenseAsync(int id)
+        public async Task<Result> DeActivateLicenseAsync(int id)
         {
             return await _UpdateLicenseStatus(id, false);
         }
 
-        public async Task<bool> DeleteLicenseAsync(int id)
+        public async Task<Result> DeleteLicenseAsync(int id)
         {
-           if(id <=0)
-        {
-                throw new ArgumentOutOfRangeException(nameof(id), "ID must be greater than zero.");
+            if (id <= 0)
+            {
+                return Result.Failure("ID must be greater than zero."
+                    , Enums.ErrorType.BadRequest);
             }
-            return await _licenseRepository.DeleteAsync(id);
+            try
+            {
+                //var license = await _uow.licenseRepository.FindAsync
+                //    (l => l.LicenseID == id);
+                //if (license is null)
+                //{
+                //    return Result.Failure("License not found."
+                //        , Enums.ErrorType.NotFound);
+                //}
+                //if (license.IsActive)
+                //{
+                //    return Result.Failure("Cannot delete an active license."
+                //        , Enums.ErrorType.Conflict);
+                //}
+                var isExist = await _uow.licenseRepository.IsExistAsync
+                    (l => l.LicenseID == id);
+                if (!isExist)
+                {
+                    return Result.Failure("License not found."
+                        , Enums.ErrorType.NotFound);
+                }
+                _uow.licenseRepository.Delete(id);
+                var result = await _uow.SaveChangesAsync();
+                if (result)
+                {
+                    return Result.Success;
+                }
+                return Result.Failure("Failed to delete license."
+                    , Enums.ErrorType.Conflict);
+            }
+            catch (Exception ex)
+            {
+                return Result.Failure($"An error occurred while deleting license: {ex.Message}"
+                    , Enums.ErrorType.InternalServerError);
+            }
         }
+        
 
-        public async Task<ReadLicenseDTO?> FindByIDAsync(int id)
+        public async Task<GenericResult<ReadLicenseDTO?>> FindByIDAsync(int id)
         {
            if(id <= 0)
             {
-                throw new ArgumentOutOfRangeException(nameof(id), "ID must be greater than zero.");
+                return GenericResult<ReadLicenseDTO?>.
+                    Failure("ID must be greater than zero.", Enums.ErrorType.BadRequest);
             }
-            var license = await _licenseRepository.FindAsync(id);
-           return license is null ? null : _mapper.Map<ReadLicenseDTO>(license);
-        }
-
-        public async Task<IEnumerable<ReadLicenseDTO>> GetAllLicenseAsync()
-        {
-            var licenses = await _licenseRepository.GetAllAsync();
-            if (licenses is null || !licenses.Any())
+            try
             {
-                return Enumerable.Empty<ReadLicenseDTO>();
+                var license = await _uow.licenseRepository.FindAsync
+                    (l => l.LicenseID == id);
+                if(license is null)
+                {
+                    return GenericResult<ReadLicenseDTO?>.
+                        Failure("License not found.", Enums.ErrorType.NotFound);
+                }
+                return GenericResult<ReadLicenseDTO?>.
+                    Success(_mapper.Map<ReadLicenseDTO>(license));
             }
-            return _mapper.Map<IEnumerable<ReadLicenseDTO>>(licenses);
+            catch (Exception ex)
+            {
+                return GenericResult<ReadLicenseDTO?>
+                    .Failure($"An error occurred while retrieving data from the DB: " +
+                    $"{ex.Message}", Enums.ErrorType.InternalServerError);
+            }
+
         }
 
-        public async Task<bool> IsLicenseActive(int id)
+        public async Task<GenericResult<IEnumerable<ReadLicenseDTO>>> GetAllLicenseAsync()
         {
-           return await _licenseRepository.IsLicenseActiveAsync(id);
+            try
+            {
+                var licenses = await _uow.licenseRepository.GetAllAsync(null!,"LicenseClass");
+                if (licenses is null || !licenses.Any())
+                {
+                    return GenericResult<IEnumerable<ReadLicenseDTO>>
+                        .Failure("No licenses found.", Enums.ErrorType.NotFound);
+                }
+                return GenericResult<IEnumerable<ReadLicenseDTO>>.Success
+                    (_mapper.Map<IEnumerable<ReadLicenseDTO>>(licenses));
+            }
+            catch (Exception ex)
+            {
+                return GenericResult<IEnumerable<ReadLicenseDTO>>
+                    .Failure($"An error occurred while retrieving data from the DB: " +
+                    $"{ex.Message}", Enums.ErrorType.InternalServerError);
+            }
         }
-        private async Task<int>  _CreateLicenseAsync(LicenseDTO licenseDTO,
+
+        private async Task<GenericResult<int>>  _CreateLicenseAsync(LicenseDTO licenseDTO,
             Enums.IssueReason issueReason=Enums.IssueReason.FirstTime)
         {
-            if (licenseDTO is null)
+            var validationResult = await licenseDTO.ValidateForCreateLicenseAsync
+                (_uow);
+            if(!validationResult.IsSuccess)
             {
-                throw new ArgumentNullException(nameof(licenseDTO), "License DTO cannot be null.");
+                return GenericResult<int>.Failure(validationResult.ErrorMessage
+                    , validationResult.ErrorType);
             }
-            if (!(await _applicationService.IsExistAsync(licenseDTO.ApplicationID)))
+            try
             {
-                throw new ArgumentException("Application does not exist.", nameof(licenseDTO.ApplicationID));
-            }
-            // to do later add validation for DriverID if it exists in the system 15/07/2025
-            var license = _mapper.Map<License>(licenseDTO);
+                var license = _mapper.Map<License>(licenseDTO);
 
-            if (await _applicationService.CompleteApplicationAsync(licenseDTO.ApplicationID) is false)
-            {
-                throw new InvalidOperationException("Application could not be completed.");
-            }
 
-            license.IssueDate = DateTime.UtcNow;
-            var licenseValidityLength = await _licenseClassService
-                .GetLicenseValidityLengthAsync(license.LicenseClass);
-            license.ExpirationDate = license.IssueDate.AddYears(licenseValidityLength);
-            license.IsActive = true;
-            license.IssueReason = (byte)issueReason;
-            return await _licenseRepository.AddAsync(license);
+                license.IssueDate = DateTime.UtcNow;
+                var licenseValidityLength = await Constants.LicenseValidityLength
+                    ((int)licenseDTO.LicenseClass, _uow);
+
+                license.ExpirationDate = license.IssueDate.AddYears(licenseValidityLength);
+                license.IsActive = true;
+                license.IssueReason = (byte)issueReason;
+               var completeApplicationResult= await _applicationService
+                    .CompleteApplicationAsync(licenseDTO.ApplicationID);
+                if(!completeApplicationResult.IsSuccess)
+                {
+                    GenericResult<int>.Failure(completeApplicationResult.ErrorMessage
+                        , completeApplicationResult.ErrorType);
+                }
+                _uow.licenseRepository.Add(license);
+                var result = await _uow.SaveChangesAsync();
+                if(result)
+                {
+                    return GenericResult<int>.Success(license.LicenseID);
+                }
+                return GenericResult<int>.Failure("License can't be created",
+                    Enums.ErrorType.Conflict);
+            }
+            catch (Exception ex)
+            {
+                return GenericResult<int>
+                    .Failure($"An error occurred while saving data to the DB: " +
+                    $"{ex.Message}", Enums.ErrorType.InternalServerError);
+            }
         }
             
-        public async Task<int> IssueNewDrivingLicenseAsync(LicenseDTO licenseDTO)
+        public async Task<GenericResult<int>> IssueNewDrivingLicenseAsync(LicenseDTO licenseDTO)
         {
             return await _CreateLicenseAsync(licenseDTO, Enums.IssueReason.FirstTime);
         }
-        public async Task<int> RenewLicenseAsync(int oldLicenseID,LicenseDTO licenseDTO)
+        public async Task<GenericResult<int>> RenewLicenseAsync(int oldLicenseID,LicenseDTO licenseDTO)
         {
-            if(oldLicenseID <= 0)
+            var validationResult = await _ValidateForRenewLicense(oldLicenseID);
+            if(!validationResult.IsSuccess)
             {
-                throw new ArgumentOutOfRangeException(nameof(oldLicenseID), "Old license ID must be greater than zero.");
+                return GenericResult<int>.Failure(validationResult.ErrorMessage,
+                    validationResult.ErrorType);
             }
-            if(await IsLicenseExistAndActiveAsync(oldLicenseID) is false)
-            {
-                throw new ArgumentException("Old license does not exist or is not active.", nameof(oldLicenseID));
-            }
-            if(await IsLicenseExpired(oldLicenseID) is false)
-            {
-                throw new InvalidOperationException(
-                    ($"{nameof(oldLicenseID)} License is not expired, cannot renew."));
-            }
+
             return await _CreateLicenseAsync(licenseDTO, Enums.IssueReason.Renew);
 
         }
-        public async Task<int> IssueReplacementForLostLicenseAsync(int oldLicenseID
+        public async Task<GenericResult<int>> IssueReplacementForLostLicenseAsync(int oldLicenseID
             , LicenseDTO licenseDTO)
         {
-            if (oldLicenseID <= 0)
+            var validationResult = await _ValidateForIssueReplacement(oldLicenseID);
+            if(!validationResult.IsSuccess)
             {
-                throw new ArgumentOutOfRangeException(nameof(oldLicenseID), "Old license ID must be greater than zero.");
-            }
-            if (await IsLicenseExistAndActiveAsync(oldLicenseID) is false)
-            {
-                throw new ArgumentException("Old license does not exist or is not active.", nameof(oldLicenseID));
-            }
-            if(await IsLicenseExpired(oldLicenseID) is true)
-            {
-                throw new InvalidOperationException(
-                    ($"{nameof(oldLicenseID)} License is expired, cannot issue replacement for lost license."));
+                return GenericResult<int>.Failure(validationResult.ErrorMessage,
+                    validationResult.ErrorType);
             }
             return await _CreateLicenseAsync(licenseDTO, Enums.IssueReason.ReplacementForLost);
         }
-        public async Task<int> IssueReplacementForDamagedLicenseAsync(int oldLicenseID
+        public async Task<GenericResult<int>> IssueReplacementForDamagedLicenseAsync(int oldLicenseID
             , LicenseDTO licenseDTO)
         {
-            if (oldLicenseID <= 0)
+            var validationResult = await _ValidateForIssueReplacement(oldLicenseID);
+            if (!validationResult.IsSuccess)
             {
-                throw new ArgumentOutOfRangeException(nameof(oldLicenseID), "Old license ID must be greater than zero.");
-            }
-            if (await IsLicenseExistAndActiveAsync(oldLicenseID) is false)
-            {
-                throw new ArgumentException("Old license does not exist or is not active.", nameof(oldLicenseID));
-            }
-            if (await IsLicenseExpired(oldLicenseID) is true)
-            {
-                throw new InvalidOperationException(
-                    ($"{nameof(oldLicenseID)} License is expired, cannot issue replacement for damaged license."));
+                return GenericResult<int>.Failure(validationResult.ErrorMessage,
+                    validationResult.ErrorType);
             }
             return await _CreateLicenseAsync(licenseDTO, Enums.IssueReason.ReplacementForDamaged);
         }
 
-        public async Task<bool> IsLicenseExpired(int id)
+        private async Task<Result> _ValidateForIssueReplacement(int oldLicenseID)
         {
-            if(id <= 0)
+            if (oldLicenseID <= 0)
             {
-                throw new ArgumentOutOfRangeException(nameof(id), "ID must be greater than zero.");
+                return Result.Failure("Invalid license id", Enums.ErrorType.BadRequest);
             }
-            var license = await _licenseRepository.FindAsync(id);
-            if (license is null)
+            var oldLicense = await _uow.licenseRepository.FindAsync
+                (l => l.LicenseID == oldLicenseID);
+            if(oldLicense is null)
             {
-                throw new ArgumentException(nameof(license));
+                return Result.Failure("License does not exist", Enums.ErrorType.BadRequest);
             }
-            int result = DateTime.Compare(license.ExpirationDate, license.IssueDate);
-            return result < 0 ? true : false;
+            if(!oldLicense.IsActive)
+            {
+                return Result.Failure("License is not active", Enums.ErrorType.BadRequest);
+            }
+            if (DateTime.Compare(oldLicense.ExpirationDate, DateTime.Now) <= 0)
+            {
+                return Result.Failure("License is expired", Enums.ErrorType.BadRequest);
+            }
+            return Result.Success;
+        }
+        private async Task<Result> _ValidateForRenewLicense(int oldLicenseID)
+        {
+            if (oldLicenseID <= 0)
+            {
+                return Result.Failure("Invalid license id", Enums.ErrorType.BadRequest);
+            }
+            var oldLicense = await _uow.licenseRepository.FindAsync
+                (l => l.LicenseID == oldLicenseID);
+            if (oldLicense is null)
+            {
+                return Result.Failure("License does not exist", Enums.ErrorType.BadRequest);
+            }
+            if (!oldLicense.IsActive)
+            {
+                return Result.Failure("License is not active", Enums.ErrorType.BadRequest);
+            }
+            if (DateTime.Compare(oldLicense.ExpirationDate, DateTime.Now) > 0)
+            {
+                return Result.Failure("License is not expired", Enums.ErrorType.BadRequest);
+            }
+            return Result.Success;
         }
 
-        public async Task<bool> IsLicenseExistAndActiveAsync(int id)
-        {
-            if(id<=0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(id));
-            }
-            return await _licenseRepository.IsExistAndActiveAsync(id);
-        }
     }
 }
