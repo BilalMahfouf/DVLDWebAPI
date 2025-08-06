@@ -42,11 +42,11 @@ namespace BusinessLoginLayer.Services.Licenses
             }
 
         }
-        public async Task<GenericResult<LicenseClassDTO?>> FindByIDAsync(int id)
+        public async Task<GenericResult<LicenseClassDTO>> FindByIDAsync(int id)
         {
             if (id <= 0)
             {
-                return GenericResult<LicenseClassDTO?>
+                return GenericResult<LicenseClassDTO>
                     .Failure("License class ID must be greater than zero.", Enums.ErrorType.BadRequest);
             }
             try
@@ -55,15 +55,15 @@ namespace BusinessLoginLayer.Services.Licenses
                (a => a.ApplicationTypeID == id);
                 if (licenseClass is null)
                 {
-                    return GenericResult<LicenseClassDTO?>
+                    return GenericResult<LicenseClassDTO>
                         .Failure("License class not found.", Enums.ErrorType.NotFound);
                 }
-                return GenericResult<LicenseClassDTO?>.Success
+                return GenericResult<LicenseClassDTO>.Success
                     (_mapper.Map<LicenseClassDTO>(licenseClass));
             }
             catch (Exception ex)
             {
-                return GenericResult<LicenseClassDTO?>
+                return GenericResult<LicenseClassDTO>
                     .Failure($"An error occurred while retrieving data from the DB: {ex.Message}", Enums.ErrorType.InternalServerError);
             }
 

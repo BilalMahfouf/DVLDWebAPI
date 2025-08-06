@@ -136,24 +136,24 @@ namespace BusinessLoginLayer.Services
             }
         }
 
-        public async Task<GenericResult<ReadUserDTO?>> FindByIDAsync(int id)
+        public async Task<GenericResult<ReadUserDTO>> FindByIDAsync(int id)
         {
             if(id <= 0)
             {
-                return GenericResult<ReadUserDTO?>.Failure("invalid user id", Enums.ErrorType.BadRequest);
+                return GenericResult<ReadUserDTO>.Failure("invalid user id", Enums.ErrorType.BadRequest);
             }
             try
             {
                 var user = await _uow.userRepository.FindAsync(u => u.UserID == id);
                 if(user is null)
                 {
-                    return GenericResult<ReadUserDTO?>.Failure("User not found.", Enums.ErrorType.NotFound);
+                    return GenericResult<   ReadUserDTO>.Failure("User not found.", Enums.ErrorType.NotFound);
                 }
-                return GenericResult<ReadUserDTO?>.Success(_mapper.Map<ReadUserDTO>(user));
+                return GenericResult<ReadUserDTO>.Success(_mapper.Map<ReadUserDTO>(user));
             }
             catch (Exception ex)
             {
-                return GenericResult<ReadUserDTO?>.Failure("an error occurred while retrieving data " +
+                return GenericResult<ReadUserDTO>.Failure("an error occurred while retrieving data " +
                     $"from the DB ex {ex.Message}", Enums.ErrorType.InternalServerError);
             }
 

@@ -20,15 +20,13 @@ namespace BusinessLoginLayer.Services.Licenses
     public class InternationalLicenseService : IInternationalLicenseService
     {
         private readonly IUnitOfWork _uow;
-        private readonly ILicenseService _licenseService;
         private readonly IApplicationService _applicationService;
         private readonly IMapper _mapper;
 
-        public InternationalLicenseService(IMapper mapper, ILicenseService licenseService
+        public InternationalLicenseService(IMapper mapper
             , IApplicationService applicationService, IUnitOfWork uow)
         {
             _mapper = mapper;
-            _licenseService = licenseService;
             _applicationService = applicationService;
             _uow = uow;
         }
@@ -106,12 +104,12 @@ namespace BusinessLoginLayer.Services.Licenses
             }
         }
 
-        public async Task<GenericResult<ReadInternationalLicenseDTO?>>
+        public async Task<GenericResult<ReadInternationalLicenseDTO>>
             FindByIDAsync(int id)
         {
            if(id <=0)
             {
-                return GenericResult<ReadInternationalLicenseDTO?>
+                return GenericResult<ReadInternationalLicenseDTO>
                     .Failure("License ID must be greater than zero."
                     , Enums.ErrorType.BadRequest);
             }
@@ -121,15 +119,15 @@ namespace BusinessLoginLayer.Services.Licenses
                     .FindAsync(l => l.InternationalLicenseID == id);
                 if(license is null)
                 {
-                    return GenericResult<ReadInternationalLicenseDTO?>
+                    return GenericResult<ReadInternationalLicenseDTO>
                         .Failure("International license not found.", Enums.ErrorType.NotFound);
                 }
-                return GenericResult<ReadInternationalLicenseDTO?>
+                return GenericResult<ReadInternationalLicenseDTO>
                     .Success(_mapper.Map<ReadInternationalLicenseDTO>(license));
             }
             catch (Exception ex)
             {
-                return GenericResult<ReadInternationalLicenseDTO?>
+                return GenericResult<ReadInternationalLicenseDTO>
                     .Failure($"An error occurred while retrieving data from the DB: " +
                     $"{ex.Message}", Enums.ErrorType.InternalServerError);
             }

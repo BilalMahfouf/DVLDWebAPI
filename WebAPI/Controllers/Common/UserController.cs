@@ -2,6 +2,7 @@
 using Core.Interfaces.Services.Users;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using WebAPI.Controllers.Extensions;
 
 namespace WebAPI.Controllers.Common
 {
@@ -9,82 +10,92 @@ namespace WebAPI.Controllers.Common
     [ApiController]
     public class UserController : ControllerBase
     {
-        private readonly IUserService _userService;
-        public UserController(IUserService userService)
+        private readonly IUserService _service;
+        public UserController(IUserService service)
         {
-            _userService = userService;
+            _service = service;
         }
-        [HttpGet("GetUserById/{id}", Name = "GetUserByIDAsync")]
+        [HttpGet("getById/{id:int}", Name = "GetUserByIDAsync")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
 
         public async Task<ActionResult<ReadUserDTO>> GetUserByIDAsync(int id)
         {
-            if (id <= 0)
-            {
-                return BadRequest("Invalid user ID.");
-            }
-            var user = await _userService.FindByIDAsync(id);
-            if (user == null)
-            {
-                return NotFound($"User with ID {id} not found.");
-            }
-            return Ok(user);
+           var response=await _service.FindByIDAsync(id);
+            return response.HandleResult();
         }
 
-        [HttpGet("All", Name = "GetAllAsync")]
+        [HttpGet("all", Name = "GetAllAsync")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
 
         public async Task<ActionResult<IEnumerable<ReadUserDTO>>> GetAllAsync()
         {
-            var users = await _userService.GetAllAsync();
-            if (users == null || !users.Any())
-            {
-                return NotFound("No users found.");
-            }
-            return Ok(users);
+           var response = await _service.GetAllAsync();
+            return response.HandleResult();    
         }
 
-        [HttpPost("Create", Name = "CreateUserAsync")]
+        [HttpPost("create", Name = "CreateUserAsync")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
 
-        public async Task<ActionResult<ReadUserDTO>> CreateUserAsync([FromBody] CreateUserDTO userDTO)
+        public async Task<ActionResult<int>> CreateUserAsync([FromBody] CreateUserDTO userDTO)
         {
-            if (userDTO == null)
-            {
-                return BadRequest("User data is required.");
-            }
-            var userId = await _userService.CreateUserAsync(userDTO);
-            var createdUser = await _userService.FindByIDAsync(userId);
-            return CreatedAtRoute("GetUserByIDAsync", new { id = userId }, createdUser);
+            var response= await _service.CreateUserAsync(userDTO);
+            return response.HandleResult(nameof(GetUserByIDAsync), new {Id=response.Data});
         }
 
-        [HttpPut("Update/{userID}", Name = "UpdateUserAsync")]
+        [HttpPut("update/{id:int}", Name = "UpdateUserAsync")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
 
         public async Task<ActionResult> UpdateUserAsync(int userID, [FromBody] UpdateUserDTO userDTO)
         {
-            if (userDTO == null || userID <= 0)
-            {
-                return BadRequest("Invalid user data or ID.");
-            }
-            var updated = await _userService.UpdateUserAsync(userID, userDTO);
-            if (!updated)
-            {
-                return NotFound($"User with ID {userID} not found.");
-            }
-            return Ok();
+            var response = await _service.UpdateUserAsync(userID, userDTO);
+            return response.HandleResult();
         }
 
-        //[HttpDelete("Delete/{id}", Name = "DeleteUserAsync")]
-        //[ProducesResponseType(StatusCodes.Status200OK)]
-        //[ProducesResponseType(StatusCodes.Status409Conflict)]
+        [HttpDelete("delete/{id:int}", Name = "DeleteUserAsync")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<bool>> DeleteUserAsync(int id)
+        {
+            var response = await _service.DeleteUserAsync(id);
+            return response.HandleResult();
+        }
+
+        [HttpPut("activate/{id:int}", Name = "ActivateUserAsync")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+
+        public async Task<ActionResult> ActivateUserAsync(int userID)
+        {
+            var response = await _service.ActivateAsync(userID);
+            return response.HandleResult();
+        }
+        [HttpPut("deactivate/{id:int}", Name = "DeActivateUserAsync")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+
+        public async Task<ActionResult> DeActivateUserAsync(int userID)
+        {
+            var response = await _service.DeActivateAsync(userID);
+            return response.HandleResult();
+        }
 
     }
 }

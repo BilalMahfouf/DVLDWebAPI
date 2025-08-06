@@ -96,11 +96,11 @@ namespace BusinessLoginLayer.Services.Licenses
             }
         }
 
-        public async Task<GenericResult<DetainLicenseDTO?>> FindAsync(int id)
+        public async Task<GenericResult<DetainLicenseDTO>> FindAsync(int id)
         {
             if (id <= 0)
             {
-                return GenericResult<DetainLicenseDTO?>.Failure("ID must be greater than zero.",
+                return GenericResult<DetainLicenseDTO>.Failure("ID must be greater than zero.",
                     Enums.ErrorType.BadRequest);
             }
             try
@@ -109,15 +109,15 @@ namespace BusinessLoginLayer.Services.Licenses
                     (d => d.DetainID == id);
                 if(detainedLicense is null)
                 {
-                    return GenericResult<DetainLicenseDTO?>.Failure("Detained license not found.",
+                    return GenericResult<DetainLicenseDTO>.Failure("Detained license not found.",
                         Enums.ErrorType.NotFound);
                 }
-                return GenericResult<DetainLicenseDTO?>
+                return GenericResult<DetainLicenseDTO>
                     .Success(_mapper.Map<DetainLicenseDTO>(detainedLicense));
             }
             catch (Exception ex)
             {
-                return GenericResult<DetainLicenseDTO?>.Failure
+                return GenericResult<DetainLicenseDTO>.Failure
                     ("an error occurred while retrieving data " +
                     $"from the DB ex {ex.Message}", Enums.ErrorType.InternalServerError);
             }

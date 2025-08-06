@@ -144,12 +144,12 @@ namespace BusinessLoginLayer.Services.Applications
             }
         }
 
-        public async Task<GenericResult<ReadApplicationDTO?>> FindByIDAsync
+        public async Task<GenericResult<ReadApplicationDTO>> FindByIDAsync
             (int applicationID)
         {
             if (applicationID <= 0)
             {
-                return GenericResult<ReadApplicationDTO?>.Failure("ID must be greater then 0",
+                return GenericResult<ReadApplicationDTO>.Failure("ID must be greater then 0",
                     Enums.ErrorType.BadRequest);
             }
             try
@@ -158,15 +158,15 @@ namespace BusinessLoginLayer.Services.Applications
                                 (a => a.ApplicationID == applicationID);
                 if (application is null)
                 {
-                    return GenericResult<ReadApplicationDTO?>.Failure("Application not found."
+                    return GenericResult<ReadApplicationDTO>.Failure("Application not found."
                         , Enums.ErrorType.NotFound);
                 }
-                return GenericResult<ReadApplicationDTO?>.Success(_mapper.
+                return GenericResult<ReadApplicationDTO>.Success(_mapper.
                     Map<ReadApplicationDTO>(application));
             }
             catch (Exception ex)
             {
-                return GenericResult<ReadApplicationDTO?>.Failure
+                return GenericResult<ReadApplicationDTO>.Failure
                     ("an error occurred while retrieving data " +
                     $"from the DB ex {ex.Message}", Enums.ErrorType.InternalServerError);
             }

@@ -2,6 +2,8 @@
 using Core.Interfaces.Services.People;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Diagnostics.CodeAnalysis;
+using WebAPI.Controllers.Extensions;
 
 namespace WebAPI.Controllers.Common
 {
@@ -15,7 +17,7 @@ namespace WebAPI.Controllers.Common
             _personService = personService;
         }
 
-        [HttpGet("GetPersonById/{id}", Name = "GetPersonByIDAsync")]
+        [HttpGet("GetPersonById/{id:int}", Name = "GetPersonByIDAsync")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -23,19 +25,11 @@ namespace WebAPI.Controllers.Common
 
         public async Task<ActionResult<ReadPersonDTO>> GetPersonByIDAsync(int id)
         {
-            if (id <= 0)
-            {
-                return BadRequest("Invalid person ID.");
-            }
             var person = await _personService.FindAsync(id);
-            if (person == null)
-            {
-                return NotFound($"Person with ID {id} not found.");
-            }
-            return Ok(person);
+            return person.HandleResult();
         }
 
-        [HttpGet("GetPersonByNationalNo/{nationalNo}", Name = "GetPersonByNationalNoAsync")]
+        [HttpGet("GetPersonByNationalNo/{nationalNo:string}", Name = "GetPersonByNationalNoAsync")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -44,16 +38,8 @@ namespace WebAPI.Controllers.Common
         public async Task<ActionResult<ReadPersonDTO>> GetPersonByNationalNoAsync
             (string nationalNo)
         {
-            if (string.IsNullOrWhiteSpace(nationalNo))
-            {
-                return BadRequest("Invalid person nationalNo.");
-            }
-            var person = await _personService.FindAsync(nationalNo);
-            if (person == null)
-            {
-                return NotFound($"Person with nationalNo {nationalNo} not found.");
-            }
-            return Ok(person);
+            var person=await _personService.FindAsync(nationalNo);
+            return person.HandleResult();
         }
 
         [HttpGet("GetAll", Name = "GetAllAsync")]
@@ -64,75 +50,34 @@ namespace WebAPI.Controllers.Common
         public async Task<ActionResult<IEnumerable<ReadPersonDTO>>> GetAllAsync()
         {
             var persons = await _personService.GetAllAsync();
-            if (persons == null || !persons.Any())
-            {
-                return NotFound("No persons found.");
-            }
-            return Ok(persons);
+            return persons.HandleResult();
         }
 
-        [HttpGet("IsExistByID/{id}", Name = "IsExistAsync")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        
 
-        public async Task<ActionResult<bool>> IsExistAsync(int id)
-        {
-            if (id <= 0)
-            {
-                return BadRequest("Invalid person ID.");
-            }
-            var isExist = await _personService.IsExistAsync(id);
-            return Ok(isExist);
-        }
-
-        [HttpGet("IsExistByNationalNo/{nationalNo}", Name = "IsExistAsync")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-
-        public async Task<ActionResult<bool>> IsExistAsync(string nationalNo)
-        {
-            if (string.IsNullOrWhiteSpace(nationalNo))
-            {
-                return BadRequest("Invalid person nationalNo.");
-            }
-            var isExist = await _personService.IsExistAsync(nationalNo);
-            return Ok(isExist);
-        }
-
-        [HttpDelete("{id}", Name = "DeleteAsync")]
+        [HttpDelete("{id:int}", Name = "DeleteAsync")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status409Conflict)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
 
         public async Task<ActionResult<bool>> DeleteAsync(int id)
         {
-            if (id <= 0)
-            {
-                return BadRequest("Invalid person ID.");
-            }
-            var isDeleted = await _personService.DeletePersonAsync(id);
-            if (!isDeleted)
-            {
-                return Conflict($"Person with ID {id} can't be deleted.");
-            }
-            return Ok(isDeleted);
+           var isDeleted=await _personService.DeletePersonAsync(id);
+            return isDeleted.HandleResult();
         }
 
         [HttpPost("Create", Name = "CreatePersonAsync")]
         [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ReadPersonDTO>> CreatePersonAsync([FromBody] PersonDTO personDTO)
+        public async Task<ActionResult<int>> CreatePersonAsync([FromBody] PersonDTO personDTO)
         {
 
-            var personId = await _personService.CreatePersonAsync(personDTO);
-            var createdPerson = await _personService.FindAsync(personId);
-            return CreatedAtRoute("GetPersonByIDAsync", new { id = personId }
-            , createdPerson);
+            var response = await _personService.CreatePersonAsync(personDTO);
+            return response.HandleResult(nameof(GetPersonByIDAsync), new {personId= response.Data});
         }
 
         [HttpPut("{id}", Name = "UpdateAsync")]
@@ -143,20 +88,8 @@ namespace WebAPI.Controllers.Common
 
         public async Task<ActionResult<bool>> UpdateAsync(int id, [FromBody] PersonDTO personDTO)
         {
-            if (id <= 0 || personDTO is null)
-            {
-                return BadRequest("Invalid person ID or data.");
-            }
-            var isUpdated = await _personService.UpdatePersonAsync(id, personDTO);
-            if (!isUpdated)
-            {
-                return Conflict($"Person with ID {id} can't be updated.");
-            }
-            return Ok(isUpdated);
-
-
-
-
+            var response = await _personService.UpdatePersonAsync(id, personDTO);
+            return response.HandleResult();
         }
     }
 }

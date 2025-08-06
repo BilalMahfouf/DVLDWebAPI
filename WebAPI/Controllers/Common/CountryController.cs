@@ -2,8 +2,9 @@
 using Core.DTOs.Country;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using WebAPI.Controllers.Extensions;
 
-namespace WebAPI.Controllers
+namespace WebAPI.Controllers.Common
 {
     [Route("api/[controller]")]
     [ApiController]
@@ -16,17 +17,18 @@ namespace WebAPI.Controllers
             _countryService = countryService;
         }
 
-        [HttpGet("All")]
+        [HttpGet("all")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+
 
         public async Task<ActionResult<IEnumerable<ReadCountryDTO>>>
             GetAllAsync()
         {
             var countries = await _countryService.GetAllCountriesAsync();
-            if(countries is null || !countries.Any())
-            {
-                return NotFound("No countries found.");
-            }
-            return Ok(countries);
+            return countries.HandleResult();
         }
+
     }
 }

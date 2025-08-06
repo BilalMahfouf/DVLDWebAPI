@@ -13,7 +13,7 @@ namespace Core.Interfaces.Services.Applications
     {
         Task<GenericResult<int>> CreateLDLApplicationAsync(LocalDrivingLicenseDTO LDLapplication);
         Task<Result> DeleteLDLApplicationAsync(int LDLapplicationID);
-        Task<GenericResult<LocalDrivingLicenseDTO?>> FindLDLAppByIDAsync
+        Task<GenericResult<LocalDrivingLicenseDTO>> FindLDLAppByIDAsync
             (int LDLapplicationID);
         Task<GenericResult<IEnumerable<LocalDrivingLicenseApplicationDashboardDTO>>>
             GetAllAsync();

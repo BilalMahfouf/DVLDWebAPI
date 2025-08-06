@@ -11,7 +11,7 @@ namespace Core.Interfaces.Services.Licenses
 {
     public interface ILicenseService 
     {
-        Task<GenericResult<ReadLicenseDTO?>> FindByIDAsync(int  id);
+        Task<GenericResult<ReadLicenseDTO>> FindByIDAsync(int  id);
         Task<GenericResult<int>> IssueNewDrivingLicenseAsync(LicenseDTO licenseDTO);
         Task<GenericResult<int>> RenewLicenseAsync(int oldLicenseID,LicenseDTO licenseDTO);
         Task<GenericResult<int>> IssueReplacementForLostLicenseAsync(int oldLicenseID,

@@ -95,12 +95,12 @@ namespace BusinessLoginLayer.Services.Applications
             }
         }
 
-        public  async Task<GenericResult<LocalDrivingLicenseDTO?>>
+        public  async Task<GenericResult<LocalDrivingLicenseDTO>>
             FindLDLAppByIDAsync(int LDLapplicationID)
         {
             if( LDLapplicationID <= 0)
             {
-                return GenericResult<LocalDrivingLicenseDTO?>.Failure("Invalid id",
+                return GenericResult<LocalDrivingLicenseDTO>.Failure("Invalid id",
                     Enums.ErrorType.BadRequest);
             }
             try
@@ -110,16 +110,16 @@ namespace BusinessLoginLayer.Services.Applications
                     == LDLapplicationID);
                 if(localDLApp is null)
                 {
-                    return GenericResult<LocalDrivingLicenseDTO?>.Failure
+                    return GenericResult<LocalDrivingLicenseDTO>.Failure
                         ("LDLApplication not found.", Enums.ErrorType.NotFound);
                 }
-                return GenericResult<LocalDrivingLicenseDTO?>.Success
+                return GenericResult<LocalDrivingLicenseDTO>.Success
                     (_mapper.Map<LocalDrivingLicenseDTO>(localDLApp));
             }
 
             catch (Exception ex)
             {
-                return GenericResult<LocalDrivingLicenseDTO?>
+                return GenericResult<LocalDrivingLicenseDTO>
                     .Failure($"An error occurred while retrieving data from the DB:" +
                     $" {ex.Message}", Enums.ErrorType.InternalServerError);
             }

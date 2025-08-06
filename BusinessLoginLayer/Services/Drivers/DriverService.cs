@@ -56,11 +56,11 @@ namespace BusinessLoginLayer.Services.Drivers
         }
             
 
-        public async Task<GenericResult<ReadDriverDTO?>> FindByIDAsync(int id)
+        public async Task<GenericResult<ReadDriverDTO>> FindByIDAsync(int id)
         {
            if(id <= 0)
             {
-                return GenericResult<ReadDriverDTO?>.Failure("ID must be greater than zero."
+                return GenericResult<ReadDriverDTO>.Failure("ID must be greater than zero."
                     , Enums.ErrorType.BadRequest);
             }
             try
@@ -68,15 +68,15 @@ namespace BusinessLoginLayer.Services.Drivers
                 var driver = await _uow.driverRepository.FindAsync(d => d.DriverID == id);
                 if (driver is null)
                 {
-                    return GenericResult<ReadDriverDTO?>.Failure("Driver not found.", Enums
+                    return GenericResult<ReadDriverDTO>.Failure("Driver not found.", Enums
                         .ErrorType.NotFound);
                 }
-                return GenericResult<ReadDriverDTO?>.Success(_mapper.Map<ReadDriverDTO>(driver));
+                return GenericResult<ReadDriverDTO>.Success(_mapper.Map<ReadDriverDTO>(driver));
 
             }
             catch (Exception ex)
             {
-                return GenericResult<ReadDriverDTO?>
+                return GenericResult<ReadDriverDTO>
                     .Failure($"An error occurred while retrieving data from the DB: {ex.Message}", Enums.ErrorType.InternalServerError);
             }
         }

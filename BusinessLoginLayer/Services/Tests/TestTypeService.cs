@@ -43,11 +43,11 @@ namespace BusinessLoginLayer.Services.Tests
             }
         }
 
-        public async Task<GenericResult<TestTypeDTO?>> FindByIDAsync(int id)
+        public async Task<GenericResult<TestTypeDTO>> FindByIDAsync(int id)
         {
             if (id <= 0)
             {
-                return GenericResult<TestTypeDTO?>
+                return GenericResult<TestTypeDTO>
                     .Failure("Test type ID must be greater than zero."
                     , Enums.ErrorType.BadRequest);
             }
@@ -56,15 +56,15 @@ namespace BusinessLoginLayer.Services.Tests
                 var testType = await _uow.testTypeRepository.FindAsync(t => t.TestTypeID == id);
                 if (testType is null)
                 {
-                    return GenericResult<TestTypeDTO?>
+                    return GenericResult<TestTypeDTO>
                         .Failure("Test type not found.", Enums.ErrorType.NotFound);
                 }
-                return GenericResult<TestTypeDTO?>.Success
+                return GenericResult<TestTypeDTO>.Success
                           (_mapper.Map<TestTypeDTO>(testType));
             }
             catch(Exception ex)
             {
-                return GenericResult<TestTypeDTO?>
+                return GenericResult<TestTypeDTO>
                     .Failure($"An error occurred while retrieving data from the DB: " +
                     $"{ex.Message}", Enums.ErrorType.InternalServerError);
             }

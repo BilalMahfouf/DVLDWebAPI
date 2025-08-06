@@ -16,7 +16,7 @@ namespace Core.Interfaces.Services.Applications
             Enums.ApplicationTypeEnum applicationType
                 = Enums.ApplicationTypeEnum.NewLocalDrivingLicense);
     Task<Result> DeleteApplicationAsync(int applicationID);
-    Task<GenericResult<ReadApplicationDTO?>> FindByIDAsync(int applicationID);
+    Task<GenericResult<ReadApplicationDTO>> FindByIDAsync(int applicationID);
     Task<Result> CancelApplication(int  applicationID);
     Task<Result> CompleteApplicationAsync(int applicationID);
     

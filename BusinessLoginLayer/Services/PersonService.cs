@@ -66,11 +66,11 @@ namespace BusinessLoginLayer.Services
 
         }
 
-        public async Task<GenericResult<ReadPersonDTO?>> FindAsync(int id)
+        public async Task<GenericResult<ReadPersonDTO>> FindAsync(int id)
         {
            if(id<= 0)
             {
-               return GenericResult<ReadPersonDTO?>.Failure("ID must be greater than zero.", Enums.ErrorType.BadRequest);
+               return GenericResult<ReadPersonDTO>.Failure("ID must be greater than zero.", Enums.ErrorType.BadRequest);
             }
            try
             {
@@ -78,23 +78,23 @@ namespace BusinessLoginLayer.Services
                     FindAsync(p => p.PersonID == id);
                 if (person is null)
                 {
-                    return GenericResult<ReadPersonDTO?>.Failure("Person not found", Enums.ErrorType.NotFound);
+                    return GenericResult<ReadPersonDTO>.Failure("Person not found", Enums.ErrorType.NotFound);
                 }
                 var personDto = _mapper.Map<ReadPersonDTO>(person);
-                return GenericResult<ReadPersonDTO?>.Success(personDto);
+                return GenericResult<ReadPersonDTO>.Success(personDto);
             }
             catch(Exception ex)
             {
-                return GenericResult<ReadPersonDTO?>.Failure($"An error occurred while finding the person: {ex.Message}", Enums.ErrorType.InternalServerError);
+                return GenericResult<ReadPersonDTO>.Failure($"An error occurred while finding the person: {ex.Message}", Enums.ErrorType.InternalServerError);
             }
 
         }
 
-        public async Task<GenericResult<ReadPersonDTO?>> FindAsync(string nationalNo)
+        public async Task<GenericResult<ReadPersonDTO>> FindAsync(string nationalNo)
         {
             if(string.IsNullOrWhiteSpace(nationalNo))
             {
-                return GenericResult<ReadPersonDTO?>.Failure("Invalid national no ", Enums.ErrorType.BadRequest);
+                return GenericResult<ReadPersonDTO>.Failure("Invalid national no ", Enums.ErrorType.BadRequest);
             }
             try
             {
@@ -102,14 +102,14 @@ namespace BusinessLoginLayer.Services
                 FindAsync(p => p.NationalNo == nationalNo);
                 if (person is null)
                 {
-                    return GenericResult<ReadPersonDTO?>.Failure("Person not found", Enums.ErrorType.NotFound);
+                    return GenericResult<ReadPersonDTO>.Failure("Person not found", Enums.ErrorType.NotFound);
                 }
                 var personDto = _mapper.Map<ReadPersonDTO>(person);
-                return GenericResult<ReadPersonDTO?>.Success(personDto);
+                return GenericResult<ReadPersonDTO>.Success(personDto);
             }
             catch (Exception ex)
             {
-                return GenericResult<ReadPersonDTO?>.Failure($"An error occurred while finding the person: {ex.Message}", Enums.ErrorType.InternalServerError);
+                return GenericResult<ReadPersonDTO>.Failure($"An error occurred while finding the person: {ex.Message}", Enums.ErrorType.InternalServerError);
             }
 
         }

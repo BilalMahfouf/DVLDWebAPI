@@ -13,7 +13,7 @@ namespace Core.Interfaces.Services.Licenses
         Task<GenericResult<int>> IssueInternationalLicense
             (InternationalLicenseDTO licenseDTO);
         Task<Result> DeleteInternationalLicenseAsync(int id);
-        Task<GenericResult<ReadInternationalLicenseDTO?>> FindByIDAsync(int id);
+        Task<GenericResult<ReadInternationalLicenseDTO>> FindByIDAsync(int id);
         Task<GenericResult<IEnumerable<ReadInternationalLicenseDTO>>> GetAllAsync();
         Task<Result> ActivateAsync(int id);
         Task<Result> DeActivateAsync(int id);

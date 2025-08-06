@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Core.Common;
 using Core.DTOs.Application;
+using Core.DTOs.Application.ApplicationType;
 using Core.Interfaces;
 using Core.Interfaces.Repositories.Common;
 using Core.Shared;
@@ -23,21 +24,21 @@ namespace BusinessLoginLayer.Services.Applications
             _mapper = mapper;
             _uow = uow;
         }
-        public async Task<GenericResult<IEnumerable<ReadApplicationDTO>>> GetAllApplicationTypesAsync()
+        public async Task<GenericResult<IEnumerable<ApplicationTypeDTO>>> GetAllApplicationTypesAsync()
         {
             try
             {
                 var applicationTypes = await _uow.applicationTypeRepository.GetAllAsync();
                 if (applicationTypes is null || !applicationTypes.Any())
                 {
-                    return GenericResult<IEnumerable<ReadApplicationDTO>>.Failure("No application types found.", Enums.ErrorType.NotFound);
+                    return GenericResult<IEnumerable<ApplicationTypeDTO>>.Failure("No application types found.", Enums.ErrorType.NotFound);
                 }
-                var readApplicationTypesDTO = _mapper.Map<IEnumerable<ReadApplicationDTO>>(applicationTypes);
-               return GenericResult<IEnumerable<ReadApplicationDTO>>.Success(readApplicationTypesDTO);
+                var readApplicationTypesDTO = _mapper.Map<IEnumerable<ApplicationTypeDTO>>(applicationTypes);
+               return GenericResult<IEnumerable<ApplicationTypeDTO>>.Success(readApplicationTypesDTO);
             }
             catch (Exception ex)
             {
-                return GenericResult<IEnumerable<ReadApplicationDTO>>
+                return GenericResult<IEnumerable<ApplicationTypeDTO>>
                     .Failure($"An error occurred while retrieving data from the DB:" +
                     $" {ex.Message}", Enums.ErrorType.InternalServerError);
             }
@@ -78,11 +79,11 @@ namespace BusinessLoginLayer.Services.Applications
                 , Enums.ErrorType.Conflict);
         }
 
-        public async Task<GenericResult<ReadApplicationDTO?>> FindByIDAsync(int id)
+        public async Task<GenericResult<ApplicationTypeDTO>> FindByIDAsync(int id)
         {
             if (id <= 0)
             {
-               return GenericResult<ReadApplicationDTO?>.Failure("Invalid ID", Enums.ErrorType.BadRequest);
+               return GenericResult<ApplicationTypeDTO>.Failure("Invalid ID", Enums.ErrorType.BadRequest);
             }
             try
             {
@@ -90,14 +91,14 @@ namespace BusinessLoginLayer.Services.Applications
                .FindAsync(a => a.ApplicationTypeID == id);
                 if (applicationType is null)
                 {
-                    return GenericResult<ReadApplicationDTO?>.Failure("Application type not found.", Enums.ErrorType.NotFound);
+                    return GenericResult<ApplicationTypeDTO>.Failure("Application type not found.", Enums.ErrorType.NotFound);
                 }
-                var applicationTypeDto = _mapper.Map<ReadApplicationDTO>(applicationType);
-                return GenericResult<ReadApplicationDTO?>.Success(applicationTypeDto);
+                var applicationTypeDto = _mapper.Map<ApplicationTypeDTO>(applicationType);
+                return GenericResult<ApplicationTypeDTO>.Success(applicationTypeDto);
             }
             catch(Exception ex)
             {
-                return GenericResult<ReadApplicationDTO?>.Failure($"An error occurred while" +
+                return GenericResult<ApplicationTypeDTO>.Failure($"An error occurred while" +
                     $" retrieving data from the DB: {ex.Message}"
                     , Enums.ErrorType.InternalServerError);
             }
