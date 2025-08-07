@@ -66,7 +66,7 @@ namespace WebAPI.Controllers.Common
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<bool>> DeleteUserAsync(int id)
+        public async Task<ActionResult> DeleteUserAsync(int id)
         {
             var response = await _service.DeleteUserAsync(id);
             return response.HandleResult();

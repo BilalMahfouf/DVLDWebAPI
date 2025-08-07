@@ -62,7 +62,7 @@ namespace WebAPI.Controllers.Common
         [ProducesResponseType(StatusCodes.Status409Conflict)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
 
-        public async Task<ActionResult<bool>> DeleteAsync(int id)
+        public async Task<ActionResult> DeleteAsync(int id)
         {
            var isDeleted=await _personService.DeletePersonAsync(id);
             return isDeleted.HandleResult();
@@ -86,7 +86,7 @@ namespace WebAPI.Controllers.Common
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
 
-        public async Task<ActionResult<bool>> UpdateAsync(int id, [FromBody] PersonDTO personDTO)
+        public async Task<ActionResult> UpdateAsync(int id, [FromBody] PersonDTO personDTO)
         {
             var response = await _personService.UpdatePersonAsync(id, personDTO);
             return response.HandleResult();

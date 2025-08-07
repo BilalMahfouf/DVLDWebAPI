@@ -47,7 +47,7 @@ namespace WebAPI.Controllers.Applications
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<bool>> DeleteAsync(int id)
+        public async Task<ActionResult> DeleteAsync(int id)
         {
             var response = await _service.DeleteLDLApplicationAsync(id);
             return response.HandleResult();
@@ -58,7 +58,7 @@ namespace WebAPI.Controllers.Applications
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
 
-        public async Task<ActionResult<LocalDrivingLicenseApplicationDashboardDTO>>
+        public async Task<ActionResult<IEnumerable<LocalDrivingLicenseApplicationDashboardDTO>>>
             GetAllAsync()
         {
             var response = await _service.GetAllAsync();

@@ -24,7 +24,6 @@
 
   <ItemGroup>
     <Folder Include="Controllers\Licenses\" />
-    <Folder Include="Controllers\Tests\" />
   </ItemGroup>
 
 </Project>

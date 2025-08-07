@@ -51,7 +51,7 @@ namespace WebAPI.Controllers.Applications
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
 
-        public async Task<ActionResult<ApplicationTypeDTO>>
+        public async Task<ActionResult<IEnumerable<ApplicationTypeDTO>>>
             GetAllAsync()
         {
             var response = await _service.GetAllApplicationTypesAsync();

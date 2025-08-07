@@ -46,7 +46,7 @@ namespace WebAPI.Controllers.Applications
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<bool>> DeleteAsync(int id)
+        public async Task<ActionResult> DeleteAsync(int id)
         {
             var response = await _service.DeleteApplicationAsync(id);
             return response.HandleResult();
