@@ -1,21 +1,20 @@
 ﻿using BusinessLoginLayer.Services.Applications;
-using Core.DTOs.Application;
+using BusinessLoginLayer.Services.Tests;
 using Core.DTOs.Application.ApplicationType;
-using Core.Interfaces.Services.Applications;
-using DataAccessLayer;
+using Core.DTOs.Test;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using WebAPI.Controllers.Extensions;
 
-namespace WebAPI.Controllers.Applications
+namespace WebAPI.Controllers.Tests
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ApplicationTypeController : ControllerBase
+    public class TestTypeController : ControllerBase
     {
-        private readonly ApplicationTypeService _service;
+        private readonly TestTypeService _service;
 
-        public ApplicationTypeController(ApplicationTypeService service)
+        public TestTypeController(TestTypeService service)
         {
             _service = service;
         }
@@ -26,7 +25,7 @@ namespace WebAPI.Controllers.Applications
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
 
-        public async Task<ActionResult<ApplicationTypeDTO>> GetByIDAsync(int id)
+        public async Task<ActionResult<TestTypeDTO>> GetByIDAsync(int id)
         {
             var response = await _service.FindByIDAsync(id);
             return response.HandleResult();
@@ -40,7 +39,7 @@ namespace WebAPI.Controllers.Applications
         [ProducesResponseType(StatusCodes.Status409Conflict)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
 
-        public async Task<ActionResult> UpdateFeesAsync(int id,decimal fees)
+        public async Task<ActionResult> UpdateFeesAsync(int id, decimal fees)
         {
             var response = await _service.UpdateFeesAsync(id, fees);
             return response.HandleResult();
@@ -51,10 +50,9 @@ namespace WebAPI.Controllers.Applications
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
 
-        public async Task<ActionResult<IEnumerable<ApplicationTypeDTO>>>
-            GetAllAsync()
+        public async Task<ActionResult<IEnumerable<TestTypeDTO>>>GetAllAsync()
         {
-            var response = await _service.GetAllApplicationTypesAsync();
+            var response = await _service.GetAllAsync();
             return response.HandleResult();
         }
     }

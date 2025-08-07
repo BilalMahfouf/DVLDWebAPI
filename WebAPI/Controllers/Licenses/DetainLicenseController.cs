@@ -1,71 +1,79 @@
-﻿using Core.DTOs.Application;
-using Core.DTOs.User;
-using Core.Interfaces.Services.Applications;
+﻿using Core.DTOs.Detain;
+using Core.DTOs.License;
+using Core.Interfaces.Services.Licenses;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using WebAPI.Controllers.Extensions;
 
-namespace WebAPI.Controllers.Applications
+namespace WebAPI.Controllers.Licenses
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ApplicationController : ControllerBase
+    public class DetainLicenseController : ControllerBase
     {
-        private readonly IApplicationService _service;
+        private readonly IDetainLicenseService _service;
 
-        public ApplicationController(IApplicationService service)
+        public DetainLicenseController(IDetainLicenseService service)
         {
             _service = service;
         }
-
         [HttpGet("getById/{id:int}", Name = "GetByIDAsync")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<DetainLicenseDTO>>GetByIDAsync(int id)
+        {
+            var response = await _service.FindAsync(id);
+            return response.HandleResult();
+        }
+        [HttpGet("all", Name = "GetAllAsync")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-
-        public async Task<ActionResult<ReadApplicationDTO>> GetByIDAsync(int id)
+        public async Task<ActionResult<IEnumerable<DetainedLicenseDashboardDTO>>>
+            GetAllAsync()
         {
-            var response = await _service.FindByIDAsync(id);
+            var response = await _service.GetAllAsync();
             return response.HandleResult();
         }
-
-        
         [HttpPost("create", Name = "CreateAsync")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status409Conflict)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
 
-        public async Task<ActionResult<int>> CreateAsync([FromBody] ApplicationDTO request)
+        public async Task<ActionResult<int>> CreateAsync
+            ([FromBody] DetainLicenseDTO request)
         {
-            var response = await _service.CreateApplicationAsync(request);
+            var response = await _service.CreateDetainedLicenseAsync(request);
             return response.HandleResult(nameof(GetByIDAsync), new { Id = response.Data });
         }
 
         [HttpDelete("delete/{id:int}", Name = "DeleteAsync")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status409Conflict)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> DeleteAsync(int id)
         {
-            var response = await _service.DeleteApplicationAsync(id);
-            return response.HandleResult();
-        }
-
-        [HttpPut("cancel/{id:int}", Name = "CancelApplicationAsync")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status409Conflict)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-
-        public async Task<ActionResult> CancelApplicationAsync(int id)
-        {
-            var response = await _service.CancelApplication(id);
+            var response = await _service.DeleteDetainedLicenseAsync(id);
             return response.HandleResult();
         }
         
+        [HttpPut("release/{id:int}", Name = "ReleaseDetainedLicenseAsync")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult> ReleaseDetainedLicenseAsync(
+            [FromBody] UpdateDetainedLicenseDTO request)
+        {
+            var response = await _service.ReleaseLicenseAsync(request);
+            return response.HandleResult();
+        }
+
     }
 }

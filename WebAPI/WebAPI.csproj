@@ -22,8 +22,4 @@
     <ProjectReference Include="..\DataAccessLayer\DataAccessLayer.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Controllers\Licenses\" />
-  </ItemGroup>
-
 </Project>
