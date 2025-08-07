@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Scalar.AspNetCore;
 using System.Reflection;
+using BusinessLoginLayer;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -18,31 +19,9 @@ builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
-builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
-builder.Services.AddScoped(typeof(IReadUpdateRepository<>), typeof(ReadUpdateRepository<>));
 
-builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
-builder.Services.AddScoped<IPersonService, BusinessLoginLayer.Services.PersonService>();
-
-
-// Remove this line as it causes CS0310 due to generic constraint issues:
-// builder.Services.AddAutoMapper(cfg => cfg.AddProfile<PersonProfile>());
-// Use one of the following correct registrations instead:
-
-// Option 1: Register by type (recommended for most scenarios)
-builder.Services.AddAutoMapper(
-    cfg=> {
-        cfg.AddProfile<PersonProfile>();
-        cfg.AddProfile<UserProfile>();
-        cfg.AddProfile<TestTypeProfile>();
-        cfg.AddProfile<LicenseClassProfile>();
-    }
-    );
-// Replace this line:
-// builder.Services.AddAutoMapper(typeof(PersonProfile));
-
-builder.Services.AddDbContext<DvldDBContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddBusinessLogicLayerServices();
+builder.Services.AddDataAccessLayerServices(builder.Configuration);
 
 
 var app = builder.Build();
