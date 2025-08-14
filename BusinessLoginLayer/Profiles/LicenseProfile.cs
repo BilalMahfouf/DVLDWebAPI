@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Core.Common;
 using Core.DTOs.License;
 using DataAccessLayer;
 using System;
@@ -21,7 +22,8 @@ namespace BusinessLoginLayer.Profiles
                 .ForMember(l => l.ExpirationDate, opt => opt.Ignore())
                 .ForMember(l => l.IsActive, opt => opt.Ignore());
 
-            CreateMap<License, ReadLicenseDTO>();
+            CreateMap<License, ReadLicenseDTO>()
+                .ForMember(l => l.IssueReason, opt => opt.MapFrom(src => (Enums.IssueReason)src.IssueReason));
 
         }
     }

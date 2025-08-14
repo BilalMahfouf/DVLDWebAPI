@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Core.Common;
 using Core.DTOs.Test;
 using DataAccessLayer;
 using System;
@@ -14,7 +15,8 @@ namespace BusinessLoginLayer.Profiles
       public TestAppointmentProfile()
         {
             CreateMap<TestAppointment, TestAppointmentDTO>()
-                .ReverseMap();
+                .ForMember(dest => dest.TestType
+                , opt => opt.MapFrom(src => src.TestTypeID.ToString()));
             CreateMap<TestAppointments_View, TestAppointmentDTO>();
         }
     }

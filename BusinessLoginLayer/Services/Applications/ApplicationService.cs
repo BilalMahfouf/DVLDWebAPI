@@ -155,7 +155,8 @@ namespace BusinessLoginLayer.Services.Applications
             try
             {
                 var application = await _uow.applicationRepository.FindAsync
-                                (a => a.ApplicationID == applicationID);
+                                (a => a.ApplicationID == applicationID
+                                , "ApplicationType,ApplicantPerson,CreatedByUser");
                 if (application is null)
                 {
                     return GenericResult<ReadApplicationDTO>.Failure("Application not found."

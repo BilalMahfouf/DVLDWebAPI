@@ -86,7 +86,7 @@ namespace BusinessLoginLayer.Services.Drivers
         {
             try
             {
-                var drivers = await _uow.driverRepository.GetAllAsync();
+                IEnumerable<Driver> drivers = await _uow.driverRepository.GetAllAsync();
                 if (drivers is null || !drivers.Any())
                 {
                     return GenericResult<IEnumerable<DriverDashboardDTO>>

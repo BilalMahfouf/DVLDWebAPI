@@ -7,7 +7,7 @@ namespace DataAccessLayer;
 public partial class Country:IEntity
 {
     public int CountryID { get; set; }
-    public int ID
+    int IEntity.ID
     {
         get => CountryID;
         set => CountryID = value;

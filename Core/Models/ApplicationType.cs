@@ -9,7 +9,7 @@ public partial class ApplicationType: IEntity
 {
     public int ApplicationTypeID { get; set; }
 
-    public int ID
+     int IEntity.ID
     {
         get => ApplicationTypeID;
         set => ApplicationTypeID = value;
