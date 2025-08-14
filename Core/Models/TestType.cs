@@ -7,7 +7,7 @@ namespace DataAccessLayer;
 public partial class TestType:IEntity
 {
     public int TestTypeID { get; set; }
-    public int ID
+    int IEntity.ID
     {
         get => TestTypeID;
         set => TestTypeID = value;

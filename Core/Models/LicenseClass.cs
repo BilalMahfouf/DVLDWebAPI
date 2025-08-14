@@ -7,7 +7,7 @@ namespace DataAccessLayer;
 public partial class LicenseClass:IEntity
 {
     public int LicenseClassID { get; set; }
-    public int ID
+    int IEntity.ID
     {
         get => LicenseClassID;
         set => LicenseClassID = value;

@@ -32,26 +32,7 @@ namespace Core.DTOs.Application
         public int CreatedByUserID { get; set; }
         public ReadUserDTO CreatedByUser { get; set; } = null!;
 
-        public ReadApplicationDTO(int applicationID, int applicantPersonID,
-            ReadPersonDTO applicantPerson, DateTime applicationDate,
-            Enums.ApplicationTypeEnum applicationTypeID, ApplicationTypeDTO
-            applicationType, Enums.ApplicationStatusEnum applicationStatus,
-            DateTime lastStatusDate, decimal paidFees, int createdByUserID,
-            ReadUserDTO createdByUser)
-        {
-            ApplicationID = applicationID;
-            ApplicantPersonID = applicantPersonID;
-            ApplicantPerson = applicantPerson;
-            ApplicationDate = applicationDate;
-            ApplicationTypeID = applicationTypeID;
-            ApplicationType = applicationType;
-            ApplicationStatus = applicationStatus;
-            LastStatusDate = lastStatusDate;
-            PaidFees = paidFees;
-            CreatedByUserID = createdByUserID;
-            CreatedByUser = createdByUser;
-        }
-
+        
         public ReadApplicationDTO()
         {
         }
