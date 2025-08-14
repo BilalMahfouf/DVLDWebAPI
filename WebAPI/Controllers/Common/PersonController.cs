@@ -29,7 +29,7 @@ namespace WebAPI.Controllers.Common
             return person.HandleResult();
         }
 
-        [HttpGet("GetPersonByNationalNo/{nationalNo:string}", Name = "GetPersonByNationalNoAsync")]
+        [HttpGet("GetPersonByNationalNo/{nationalNo}", Name = "GetPersonByNationalNoAsync")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -42,12 +42,12 @@ namespace WebAPI.Controllers.Common
             return person.HandleResult();
         }
 
-        [HttpGet("GetAll", Name = "GetAllAsync")]
+        [HttpGet("GetAll", Name = "GetAllPeopleAsync")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
 
-        public async Task<ActionResult<IEnumerable<ReadPersonDTO>>> GetAllAsync()
+        public async Task<ActionResult<IEnumerable<ReadPersonDTO>>> GetAllPeopleAsync()
         {
             var persons = await _personService.GetAllAsync();
             return persons.HandleResult();

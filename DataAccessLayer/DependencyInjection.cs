@@ -23,7 +23,7 @@ namespace DataAccessLayer
         {
            
 
-            var connectionString = Environment.GetEnvironmentVariable("DefaultConnection");
+            var connectionString = configuration.GetConnectionString("DefaultConnection");
             services.AddDbContext<DvldDBContext>(options => options.UseSqlServer(connectionString));
 
 

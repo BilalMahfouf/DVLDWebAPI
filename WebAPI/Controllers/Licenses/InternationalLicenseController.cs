@@ -17,23 +17,23 @@ namespace WebAPI.Controllers.Licenses
             _service = service;
         }
 
-        [HttpGet("getById/{id:int}", Name = "GetByIDAsync")]
+        [HttpGet("getById/{id:int}", Name = "GetInternationalLicenseByIDAsync")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ReadInternationalLicenseDTO>>
-            GetByIDAsync(int id)
+            GetInternationalLicenseByIDAsync(int id)
         {
             var response = await _service.FindByIDAsync(id);
             return response.HandleResult();
         }
-        [HttpGet("all", Name = "GetAllAsync")]
+        [HttpGet("all", Name = "GetAllInternationalLicensesAsync")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<IEnumerable<ReadInternationalLicenseDTO>>>
-            GetAllAsync()
+            GetAllInternationalLicensesAsync()
         {
             var response = await _service.GetAllAsync();
             return response.HandleResult();
@@ -48,32 +48,32 @@ namespace WebAPI.Controllers.Licenses
             ([FromBody] InternationalLicenseDTO request)
         {
             var response = await _service.IssueInternationalLicense(request);
-            return response.HandleResult(nameof(GetByIDAsync), new { Id = response.Data });
+            return response.HandleResult(nameof(GetInternationalLicenseByIDAsync), new { Id = response.Data });
         }
           
-        [HttpDelete("delete/{id:int}", Name = "DeleteAsync")]
+        [HttpDelete("delete/{id:int}", Name = "DeleteInternationalLicenseAsync")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status409Conflict)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult> DeleteAsync(int id)
+        public async Task<ActionResult> DeleteInternationalLicenseAsync(int id)
         {
             var response = await _service.DeleteInternationalLicenseAsync(id);
             return response.HandleResult();
         }
-        [HttpPut("activate/{id:int}", Name = "ActivateAsync")]
+        [HttpPut("activate/{id:int}", Name = "ActivateInternationalLicenseAsync")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status409Conflict)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult> ActivateAsync(int id)
+        public async Task<ActionResult> ActivateInternationalLicenseAsync(int id)
         {
             var response = await _service.ActivateAsync(id);
             return response.HandleResult();
         }
-        [HttpPut("deactivate/{id:int}", Name = "DeActivateAsync")]
+        [HttpPut("deactivate/{id:int}", Name = "DeActivateInternationalLicenseAsync")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]

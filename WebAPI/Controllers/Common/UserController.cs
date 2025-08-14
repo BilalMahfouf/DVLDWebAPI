@@ -26,12 +26,12 @@ namespace WebAPI.Controllers.Common
             return response.HandleResult();
         }
 
-        [HttpGet("all", Name = "GetAllAsync")]
+        [HttpGet("all", Name = "GetAllUsersAsync")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
 
-        public async Task<ActionResult<IEnumerable<ReadUserDTO>>> GetAllAsync()
+        public async Task<ActionResult<IEnumerable<ReadUserDTO>>> GetAllUsersAsync()
         {
            var response = await _service.GetAllAsync();
             return response.HandleResult();    

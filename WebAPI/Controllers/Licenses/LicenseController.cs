@@ -15,21 +15,21 @@ namespace WebAPI.Controllers.Licenses
         {
             _service = licenseService;
         }
-        [HttpGet("getById/{id:int}", Name = "GetByIDAsync")]
+        [HttpGet("getById/{id:int}", Name = "GetLicenseByIDAsync")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ReadLicenseDTO>> GetByIDAsync(int id)
+        public async Task<ActionResult<ReadLicenseDTO>> GetLicenseByIDAsync(int id)
         {
             var response = await _service.FindByIDAsync(id);
             return response.HandleResult();
         }
-        [HttpGet("all", Name = "GetAllAsync")]
+        [HttpGet("all", Name = "GetAllLicensesAsync")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<IEnumerable<ReadLicenseDTO>>> GetAllAsync()
+        public async Task<ActionResult<IEnumerable<ReadLicenseDTO>>> GetAllLicensesAsync()
         {
             var response = await _service.GetAllLicenseAsync();
             return response.HandleResult();
@@ -44,7 +44,7 @@ namespace WebAPI.Controllers.Licenses
             ([FromBody] LicenseDTO licenseDTO)
         {
             var response = await _service.IssueNewDrivingLicenseAsync(licenseDTO);
-            return response.HandleResult(nameof(GetByIDAsync), new { Id = response.Data });
+            return response.HandleResult(nameof(GetLicenseByIDAsync), new { Id = response.Data });
         }
         [HttpPut("renew/{oldLicenseID:int}", Name = "RenewLicenseAsync")]
         [ProducesResponseType(StatusCodes.Status201Created)]
@@ -56,7 +56,7 @@ namespace WebAPI.Controllers.Licenses
             (int oldLicenseID,[FromBody] LicenseDTO licenseDTO)
         {
             var response = await _service.RenewLicenseAsync(oldLicenseID, licenseDTO);
-            return response.HandleResult(nameof(GetByIDAsync), new { Id = response.Data });
+            return response.HandleResult(nameof(GetLicenseByIDAsync), new { Id = response.Data });
         }
         [HttpPut("issueReplacementForLost/{oldLicenseID:int}", Name = "IssueReplacementForLostLicenseAsync")]
         [ProducesResponseType(StatusCodes.Status201Created)]
@@ -68,7 +68,7 @@ namespace WebAPI.Controllers.Licenses
             (int oldLicenseID, [FromBody] LicenseDTO licenseDTO)
         {
             var response = await _service.IssueReplacementForLostLicenseAsync(oldLicenseID, licenseDTO);
-            return response.HandleResult(nameof(GetByIDAsync), new { Id = response.Data });
+            return response.HandleResult(nameof(GetLicenseByIDAsync), new { Id = response.Data });
         }
         [HttpPut("issueReplacementForDamaged/{oldLicenseID:int}", Name = "IssueReplacementForDamagedLicenseAsync")]
         [ProducesResponseType(StatusCodes.Status201Created)]
@@ -80,7 +80,7 @@ namespace WebAPI.Controllers.Licenses
             (int oldLicenseID, [FromBody] LicenseDTO licenseDTO)
         {
             var response = await _service.IssueReplacementForDamagedLicenseAsync(oldLicenseID, licenseDTO);
-            return response.HandleResult(nameof(GetByIDAsync), new { Id = response.Data });
+            return response.HandleResult(nameof(GetLicenseByIDAsync), new { Id = response.Data });
         }
         [HttpDelete("delete/{id:int}", Name = "DeleteLicenseAsync")]
         [ProducesResponseType(StatusCodes.Status200OK)]

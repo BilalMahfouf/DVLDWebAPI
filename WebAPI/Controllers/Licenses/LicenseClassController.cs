@@ -15,34 +15,34 @@ namespace WebAPI.Controllers.Licenses
         {
             _service = service;
         }
-        [HttpGet("getById/{id:int}", Name = "GetByIDAsync")]
+        [HttpGet("getById/{id:int}", Name = "GetLicenseClassByIDAsync")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<LicenseClassDTO>> GetByIDAsync(int id)
+        public async Task<ActionResult<LicenseClassDTO>> GetLicenseClassByIDAsync(int id)
         {
             var response = await _service.FindByIDAsync(id);
             return response.HandleResult();
         }
-        [HttpGet("all", Name = "GetAllAsync")]
+        [HttpGet("all", Name = "GetAllLicenseClassesAsync")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<IEnumerable<LicenseClassDTO>>> GetAllAsync()
+        public async Task<ActionResult<IEnumerable<LicenseClassDTO>>> GetAllLicenseClassesAsync()
         {
             var response = await _service.GetAllAsync();
             return response.HandleResult();
         }
 
-        [HttpPut("update-fees/{id:int}", Name = "UpdateFeesAsync")]
+        [HttpPut("update-fees/{id:int}", Name = "UpdateLicenseClassFeesAsync")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status409Conflict)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
 
-        public async Task<ActionResult> UpdateFeesAsync(int id, decimal fees)
+        public async Task<ActionResult> UpdateLicenseClassFeesAsync(int id, decimal fees)
         {
             var response = await _service.UpdateFeesAsync(id, fees);
             return response.HandleResult();
