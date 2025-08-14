@@ -19,18 +19,19 @@ namespace DataAccessLayer.Repositories.Application
             : base(context)
         {
         }
+        public async Task<IEnumerable<LocalDrivingLicenseApplications_View>> GetAll_ViewAsync()
+        {
+            return await _context.LocalDrivingLicenseApplications_Views
+                .AsNoTracking()
+                .ToListAsync();
+        }
+
         public async Task<bool> IsExistNewAppAsync(int personID, int licenseClassID)
         {
 
             return await _context.LocalDrivingLicenseFullApplications_Views
                 .AnyAsync(l => l.LicenseClassID == licenseClassID && l.ApplicantPersonID == personID
                 && l.ApplicationStatus == (byte)Enums.ApplicationStatusEnum.New);
-        }
-        public async Task<IEnumerable<LocalDrivingLicenseApplications_View>> GetAll_ViewAsync()
-        {
-            return await _context.LocalDrivingLicenseApplications_Views
-                .AsNoTracking()
-                .ToListAsync();
         }
     }
 }

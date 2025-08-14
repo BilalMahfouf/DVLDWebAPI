@@ -11,7 +11,7 @@ namespace Core.Interfaces.Repositories.Applications
     public interface ILocalDrivingLicenseApplicationRepository:
         IRepository<LocalDrivingLicenseApplication>
     {
-        Task<bool> IsExistNewAppAsync(int personID, int licenseClass);
         Task<IEnumerable<LocalDrivingLicenseApplications_View>> GetAll_ViewAsync();
+        Task<bool> IsExistNewAppAsync(int personID, int licenseClassID);
     }
 }

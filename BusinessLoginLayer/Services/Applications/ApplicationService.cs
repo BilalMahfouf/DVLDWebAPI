@@ -1,10 +1,13 @@
 ﻿using AutoMapper;
 using Core.Common;
 using Core.DTOs.Application;
+using Core.Interfaces;
 using Core.Interfaces.Repositories.Applications;
 using Core.Interfaces.Repositories.Common;
 using Core.Interfaces.Services.Applications;
+using Core.Shared;
 using DataAccessLayer;
+using DataAccessLayer.Repositories.Application;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,85 +19,159 @@ namespace BusinessLoginLayer.Services.Applications
 {
     public class ApplicationService : IApplicationService
     {
-        protected readonly IApplicationRepository _applicationRepository;
+        private readonly IUnitOfWork _uow;
         protected readonly IMapper _mapper;
 
-        public ApplicationService(IApplicationRepository applicationRepository, IMapper mapper)
+        public ApplicationService( IMapper mapper, IUnitOfWork uow)
         {
-            _applicationRepository = applicationRepository;
             _mapper = mapper;
+            _uow = uow;
         }
 
-        private async Task <bool> _UpdateApplicationStatus(int applicationID, Enums.ApplicationStatusEnum status)
+        public async Task <Result> CompleteApplicationAsync(int applicationID)
         {
             if (applicationID <= 0)
             {
-                throw new ArgumentOutOfRangeException(nameof(applicationID), "Application ID must be greater than zero.");
+                Result.Failure("ID must be greater then 0", Enums.ErrorType.BadRequest);
             }
-            var application = await _applicationRepository.FindByIDAsync(applicationID);
-            if (application is null)
+            try
             {
-                throw new ArgumentNullException(nameof(application), "Application not found.");
+                var application = await _uow.applicationRepository.
+                               FindAsync(a => a.ApplicationID == applicationID);
+                if (application is null)
+                {
+                    return Result.Failure("Application not found.",
+                        Enums.ErrorType.NotFound);
+                }
+                application.ApplicationStatus = (byte)Enums.ApplicationStatusEnum.Completed;
+                application.LastStatusDate = DateTime.UtcNow;
+                _uow.applicationRepository.Update(application);
+                return Result.Success;
             }
-            application.ApplicationStatus = (byte)status;
-            application.LastStatusDate = DateTime.UtcNow;
-            return await _applicationRepository.UpdateAsync(application);
+            catch (Exception ex)
+            {
+                return Result.Failure("an error occurred while saving data " +
+                    $"to the DB ex {ex.Message}", Enums.ErrorType.InternalServerError);
+            }
         }
-        public async Task<bool> CancelApplication(int applicationID)
+        public async Task<Result> CancelApplication(int applicationID)
         {
-            return await _UpdateApplicationStatus
-                (applicationID, Enums.ApplicationStatusEnum.Canceled);
-        }
 
-        public async Task<bool> CompleteApplicationAsync(int applicationID)
-        {
-            return await _UpdateApplicationStatus
-                (applicationID, Enums.ApplicationStatusEnum.Completed);
+            if (applicationID <= 0)
+            {
+                Result.Failure("ID must be greater then 0", Enums.ErrorType.BadRequest);
+            }
+            try
+            {
+                var application = await _uow.applicationRepository.
+                               FindAsync(a => a.ApplicationID == applicationID);
+                if (application is null)
+                {
+                    return Result.Failure("Application not found.", Enums.ErrorType.NotFound);
+                }
+                application.ApplicationStatus = (byte)Enums.ApplicationStatusEnum.Canceled;
+                application.LastStatusDate = DateTime.UtcNow;
+                _uow.applicationRepository.Update(application);
+                var result = await _uow.SaveChangesAsync();
+                if (result)
+                {
+                    return Result.Success;
+                }
+                return Result.Failure("This application can't be cancelled"
+                    , Enums.ErrorType.Conflict);
+            }
+            catch (Exception ex)
+            {
+                return Result.Failure("an error occurred while saving data " +
+                    $"to the DB ex {ex.Message}", Enums.ErrorType.InternalServerError);
+            }
         }
-
-        public async Task<int> CreateApplicationAsync(ApplicationDTO application,
+        public async Task<GenericResult<int>> CreateApplicationAsync(ApplicationDTO application,
             Enums.ApplicationTypeEnum applicationType
-            = Enums.ApplicationTypeEnum.NewLocalDrivingLicense, Enums.ApplicationStatusEnum
-            applicationStatus = Enums.ApplicationStatusEnum.New)
+            = Enums.ApplicationTypeEnum.NewLocalDrivingLicense)
         {
             if (application is null)
             {
-                throw new ArgumentNullException(nameof(application), "Application cannot be null.");
+                return GenericResult<int>.Failure("application dto is null"
+                    , Enums.ErrorType.BadRequest);
             }
-            var newApplication = _mapper.Map<Application>(application);
-            newApplication.ApplicationTypeID = (byte)applicationType;
-            newApplication.ApplicationDate=DateTime.UtcNow;
-            newApplication.LastStatusDate = DateTime.UtcNow;
-            newApplication.ApplicationStatus = (byte)applicationStatus;
-            return await _applicationRepository.AddAsync(newApplication);
+            try
+            {
+                var newApplication = _mapper.Map<Application>(application);
+                newApplication.ApplicationTypeID = (byte)applicationType;
+                newApplication.ApplicationStatus = (byte)Enums.ApplicationStatusEnum.New;
+                newApplication.ApplicationDate = DateTime.UtcNow;
+                newApplication.LastStatusDate = DateTime.UtcNow;
+                _uow.applicationRepository.Add(newApplication);
+                var result = await _uow.SaveChangesAsync();
+                if(result)
+                {
+                    return GenericResult<int>.Success(newApplication.ApplicationID);
+                }
+                return GenericResult<int>.Failure("This application can't be created"
+                    , Enums.ErrorType.Conflict);
+            }
+            catch (Exception ex)
+            {
+                return GenericResult<int>.Failure("an error occurred while saving data " +
+                    $"to the DB ex {ex.Message}", Enums.ErrorType.InternalServerError);
+            }
+
         }
 
-        public async Task<bool> DeleteApplicationAsync(int applicationID)
+        public async Task<Result> DeleteApplicationAsync(int applicationID)
         {
             if (applicationID <= 0)
             {
-                throw new ArgumentOutOfRangeException(nameof(applicationID), "Application ID must be greater than zero.");
+                return Result.Failure("ID must be greater then 0",
+                    Enums.ErrorType.BadRequest);
             }
-            return await _applicationRepository.DeleteAsync(applicationID);
+            try
+            {
+                _uow.applicationRepository.Delete(applicationID);
+                var result = await _uow.SaveChangesAsync();
+                if (result)
+                {
+                    return Result.Success;
+                }
+                return Result.Failure($"Application with id {applicationID} can't be deleted"
+                    , Enums.ErrorType.Conflict);
+            }
+            catch (Exception ex)
+            {
+                return Result.Failure("an error occurred while saving data " +
+                    $"to the DB ex {ex.Message}", Enums.ErrorType.InternalServerError);
+            }
         }
 
-        public async Task<ReadApplicationDTO?> FindByIDAsync(int applicationID)
+        public async Task<GenericResult<ReadApplicationDTO>> FindByIDAsync
+            (int applicationID)
         {
             if (applicationID <= 0)
             {
-                throw new ArgumentOutOfRangeException(nameof(applicationID), "Application ID must be greater than zero.");
+                return GenericResult<ReadApplicationDTO>.Failure("ID must be greater then 0",
+                    Enums.ErrorType.BadRequest);
             }
-            var application = await _applicationRepository.FindByIDAsync(applicationID);
-            return application is null ? null : _mapper.Map<ReadApplicationDTO>(application);
+            try
+            {
+                var application = await _uow.applicationRepository.FindAsync
+                                (a => a.ApplicationID == applicationID);
+                if (application is null)
+                {
+                    return GenericResult<ReadApplicationDTO>.Failure("Application not found."
+                        , Enums.ErrorType.NotFound);
+                }
+                return GenericResult<ReadApplicationDTO>.Success(_mapper.
+                    Map<ReadApplicationDTO>(application));
+            }
+            catch (Exception ex)
+            {
+                return GenericResult<ReadApplicationDTO>.Failure
+                    ("an error occurred while retrieving data " +
+                    $"from the DB ex {ex.Message}", Enums.ErrorType.InternalServerError);
+            }
+
         }
 
-        public async Task<bool> IsExistAsync(int applicationID)
-        {
-            if (applicationID <= 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(applicationID), "Application ID must be greater than zero.");
-            }
-            return await _applicationRepository.IsExistAsync(applicationID);
-        }
     }
 }

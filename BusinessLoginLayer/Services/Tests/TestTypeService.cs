@@ -1,7 +1,11 @@
 ﻿using AutoMapper;
+using Core.Common;
 using Core.DTOs.Test;
+using Core.Interfaces;
 using Core.Interfaces.Repositories.Common;
+using Core.Shared;
 using DataAccessLayer;
+using Microsoft.EntityFrameworkCore.Metadata.Conventions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,51 +16,90 @@ namespace BusinessLoginLayer.Services.Tests
 {
     public class TestTypeService
     {
-        private readonly IReadUpdateRepository<TestType> _repo;
+        private readonly IUnitOfWork _uow;
         private readonly IMapper _mapper;
-        public TestTypeService(IReadUpdateRepository<TestType> repo, IMapper mapper)
+        public TestTypeService(IMapper mapper, IUnitOfWork uow)
         {
-            _repo = repo;
             _mapper = mapper;
+            _uow = uow;
         }
-        public async Task<IEnumerable<TestTypeDTO>> GetAllAsync()
+        public async Task<GenericResult<IEnumerable<TestTypeDTO>>> GetAllAsync()
         {
-            var testTypes = await _repo.GetAllAsync();
-            var testTypeDTOs = _mapper.Map<IEnumerable<TestTypeDTO>>(testTypes);
-            return testTypeDTOs;
+           try
+            {
+                var testTypes = await _uow.testTypeRepository.GetAllAsync();
+                if(testTypes is null || !testTypes.Any())
+                {
+                    return GenericResult<IEnumerable<TestTypeDTO>>
+                        .Failure("No test types found.", Enums.ErrorType.NotFound);
+                }
+                return GenericResult<IEnumerable<TestTypeDTO>>.Success
+                    (_mapper.Map<IEnumerable<TestTypeDTO>>(testTypes));
+            }
+            catch (Exception ex)
+            {
+                return GenericResult<IEnumerable<TestTypeDTO>>
+                    .Failure($"An error occurred while retrieving data from the DB: {ex.Message}", Enums.ErrorType.InternalServerError);
+            }
         }
 
-        public async Task<TestTypeDTO?> FindByIDAsync(int id)
+        public async Task<GenericResult<TestTypeDTO>> FindByIDAsync(int id)
         {
             if (id <= 0)
             {
-                throw new ArgumentOutOfRangeException(nameof(id), "ID must be greater than zero.");
+                return GenericResult<TestTypeDTO>
+                    .Failure("Test type ID must be greater than zero."
+                    , Enums.ErrorType.BadRequest);
             }
-            var testType = await _repo.FindByIDAsync(id);
-            if (testType is null)
+            try
             {
-                return null;
+                var testType = await _uow.testTypeRepository.FindAsync(t => t.TestTypeID == id);
+                if (testType is null)
+                {
+                    return GenericResult<TestTypeDTO>
+                        .Failure("Test type not found.", Enums.ErrorType.NotFound);
+                }
+                return GenericResult<TestTypeDTO>.Success
+                          (_mapper.Map<TestTypeDTO>(testType));
             }
-            return _mapper.Map<TestTypeDTO>(testType);
+            catch(Exception ex)
+            {
+                return GenericResult<TestTypeDTO>
+                    .Failure($"An error occurred while retrieving data from the DB: " +
+                    $"{ex.Message}", Enums.ErrorType.InternalServerError);
+            }
+           
         }
 
-        public async Task<bool>UpdateFeesAsync(int testTypeID, decimal fees)
+        public async Task<Result>UpdateFeesAsync(int testTypeID, decimal fees)
         {
-            if (testTypeID <= 0)
+            if (testTypeID <= 0 || fees < 0)
             {
-                throw new ArgumentOutOfRangeException(nameof(testTypeID), "Test type ID must be greater than zero.");
+                return Result.Failure("Test type ID must be greater than zero. " +
+                    "Fees must be greater than or equal to zero.", Enums.ErrorType.BadRequest);
             }
-            if (fees < 0)
+           try
             {
-                throw new ArgumentOutOfRangeException(nameof(fees), "Fees cannot be negative.");
+                var feesToUpdate = await _uow.testTypeRepository.FindAsync(t => t.TestTypeID == testTypeID);
+                if(feesToUpdate is null)
+                {
+                    return Result.Failure("Test type not found.", Enums.ErrorType.NotFound);
+                }
+                feesToUpdate.TestTypeFees = fees;
+                _uow.testTypeRepository.Update(feesToUpdate);
+                var result = await _uow.SaveChangesAsync();
+                if(result)
+                {
+                    return Result.Success;
+                }
+                return Result.Failure("Failed to update test type fees.", 
+                    Enums.ErrorType.Conflict);
             }
-            var testType = await _repo.FindByIDAsync(testTypeID);
-            if (testType is null)
+            catch (Exception ex)
             {
-                throw new ArgumentNullException(nameof(testType), "Test type not found.");
+                return Result.Failure($"An error occurred while saving data to the DB: {ex.Message}", Enums.ErrorType.InternalServerError);
             }
-            testType.TestTypeFees = fees;
-            return await _repo.UpdateAsync(testType);
+
         }
     }
 }

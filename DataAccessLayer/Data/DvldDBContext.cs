@@ -56,8 +56,8 @@ public partial class DvldDBContext : DbContext
 
     public virtual DbSet<View_1> View_1s { get; set; }
 
-    
 
+   
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Application>(entity =>

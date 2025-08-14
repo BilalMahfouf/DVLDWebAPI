@@ -1,4 +1,5 @@
 ﻿using Core.DTOs.Detain;
+using Core.Shared;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,10 +10,10 @@ namespace Core.Interfaces.Services.Licenses
 {
     public interface IDetainLicenseService
     {
-        Task<IEnumerable<DetainLicenseDTO>> GetAllAsync();
-        Task<DetainLicenseDTO?> FindAsync(int id);
-        Task<int> CreateDetainedLicenseAsync(DetainLicenseDTO detainedLicenseDTO);
-        Task<bool> ReleaseLicenseAsync(UpdateDetainedLicenseDTO releaseDTO);
-        Task<bool> DeleteDetainedLicenseAsync(int id);
+        Task<GenericResult<IEnumerable<DetainLicenseDTO>>> GetAllAsync();
+        Task<GenericResult<DetainLicenseDTO>> FindAsync(int id);
+        Task<GenericResult<int>> CreateDetainedLicenseAsync(DetainLicenseDTO detainedLicenseDTO);
+        Task<Result> ReleaseLicenseAsync(UpdateDetainedLicenseDTO releaseDTO);
+        Task<Result> DeleteDetainedLicenseAsync(int id);
     }
 }

@@ -7,7 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Interfaces\Repositories\Tests\" />
     <Folder Include="Models\" />
   </ItemGroup>
 

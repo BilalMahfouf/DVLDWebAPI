@@ -1,7 +1,9 @@
 ﻿using Core.DTOs.User;
+using Core.Shared;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices.Marshalling;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -9,14 +11,14 @@ namespace Core.Interfaces.Services.Users
 {
     public interface IUserService
     {
-        Task<ReadUserDTO?> FindByIDAsync(int id);
-        Task<IEnumerable<ReadUserDTO>> GetAllAsync();
-        Task<int> CreateUserAsync(CreateUserDTO userDTO);
-        Task<bool> UpdateUserAsync(int userID,UpdateUserDTO userDTO);
-        Task<bool> DeleteUserAsync(int id);
-        Task<bool> ActivateAsync(int id);
-        Task<bool> DeActivateAsync(int id);
-        Task<bool> CanCreateUserAsync(int personID);
+        Task<GenericResult<ReadUserDTO>> FindByIDAsync(int id);
+        Task<GenericResult<IEnumerable<ReadUserDTO>>> GetAllAsync();
+        Task<GenericResult<int>> CreateUserAsync(CreateUserDTO userDTO);
+        Task<Result> UpdateUserAsync(int userID,UpdateUserDTO userDTO);
+        Task<Result> DeleteUserAsync(int id);
+        Task<Result> ActivateAsync(int id);
+        Task<Result> DeActivateAsync(int id);
+        Task<Result> CanCreateUserAsync(int personID);
 
 
     }

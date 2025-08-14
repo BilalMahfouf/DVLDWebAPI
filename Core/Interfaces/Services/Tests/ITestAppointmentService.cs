@@ -1,4 +1,5 @@
 ﻿using Core.DTOs.Test;
+using Core.Shared;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,12 +10,12 @@ namespace Core.Interfaces.Services.Tests
 {
     public interface ITestAppointmentService
     {
-        Task<TestAppointmentDTO?> FindByIDAsync(int id);
-        Task<int> CreateTestAppointmentAsync(TestAppointmentDTO testAppointmentDTO);
-        Task<bool> UpdateTestAppointmentAsync(int id,int retakeTestAppointmentID);
-        Task<bool> DeleteTestAppointmentAsync(int id);
-        Task<bool> LockTestAppointment(int id);
-        Task<IEnumerable<TestAppointmentDTO>> GetAllTestAppointmentAsync();
+        Task<GenericResult<TestAppointmentDTO>> FindByIDAsync(int id);
+        Task<GenericResult<int>> CreateTestAppointmentAsync(TestAppointmentDTO testAppointmentDTO);
+        Task<Result> UpdateTestAppointmentAsync(int id,int retakeTestAppointmentID);
+        Task<Result> DeleteTestAppointmentAsync(int id);
+        Task<Result> LockTestAppointment(int id);
+        Task<GenericResult<IEnumerable<TestAppointmentDTO>>> GetAllTestAppointmentAsync();
 
     }
 }

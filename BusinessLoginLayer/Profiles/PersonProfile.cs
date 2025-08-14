@@ -12,7 +12,7 @@ namespace BusinessLoginLayer.Profiles
 {
     public class PersonProfile:Profile
     {
-        PersonProfile() 
+       public PersonProfile() 
         {
             CreateMap<Person, ReadPersonDTO>();
             CreateMap<PersonDTO, Person>();

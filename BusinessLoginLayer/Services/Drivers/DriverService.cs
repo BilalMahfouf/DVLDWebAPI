@@ -1,7 +1,12 @@
 ﻿using AutoMapper;
+using BusinessLoginLayer.Helpers;
+using Core.Common;
 using Core.DTOs.Driver;
+using Core.DTOs.License;
+using Core.Interfaces;
 using Core.Interfaces.Repositories.Common;
 using Core.Interfaces.Services.Drivers;
+using Core.Shared;
 using DataAccessLayer;
 using System;
 using System.Collections.Generic;
@@ -13,53 +18,112 @@ namespace BusinessLoginLayer.Services.Drivers
 {
     public class DriverService : IDriverService
     {
-        private readonly IRepository<Driver> _repo;
+        private readonly IUnitOfWork _uow;
         private readonly IMapper _mapper;
 
-        public DriverService(IMapper mapper, IRepository<Driver> driverRepository)
+        public DriverService(IMapper mapper, IUnitOfWork uow)
         {
             _mapper = mapper;
-            _repo = driverRepository;
+            _uow = uow;
         }
 
-        public async Task<int> CreateDriverAsync(DriverDTO driverDTO)
+        public async Task<GenericResult<int>> CreateDriverAsync(DriverDTO driverDTO)
         {
-            if(driverDTO is null)
+            try
             {
-                throw new ArgumentNullException(nameof(driverDTO), "Driver DTO cannot be null.");
+                var validationResult = await driverDTO.ValidateForCreateDriverAsync(_uow);
+                if (!validationResult.IsSuccess)
+                {
+                    return GenericResult<int>.Failure(validationResult.ErrorMessage, validationResult.ErrorType);
+                }
+                var driver = _mapper.Map<Driver>(driverDTO);
+                driver.CreatedDate = DateTime.UtcNow;
+                _uow.driverRepository.Add(driver);
+                var result = await _uow.SaveChangesAsync();
+                if (result)
+                {
+                    return GenericResult<int>.Success(driver.DriverID);
+                }
+                return GenericResult<int>.Failure("Failed to create driver"
+                    , Enums.ErrorType.Conflict);
             }
-            var driver= _mapper.Map<Driver>(driverDTO);
-            driver.CreatedDate = DateTime.UtcNow;
-            return await _repo.AddAsync(driver);
+            catch(Exception ex)
+            {
+                return GenericResult<int>.Failure($"An error occurred while saving data" +
+                    $" to the DB: {ex.Message}"
+                    , Enums.ErrorType.InternalServerError);
+            }
         }
+            
 
-        public async Task<ReadDriverDTO?> FindByIDAsync(int id)
+        public async Task<GenericResult<ReadDriverDTO>> FindByIDAsync(int id)
         {
-           if(id<=0)
+           if(id <= 0)
             {
-                throw new ArgumentOutOfRangeException(nameof(id), "ID must be greater than zero.");
+                return GenericResult<ReadDriverDTO>.Failure("ID must be greater than zero."
+                    , Enums.ErrorType.BadRequest);
             }
-           var driver = await _repo.FindByIDAsync(id);
-            return driver is null ? null : _mapper.Map<ReadDriverDTO>(driver);
+            try
+            {
+                var driver = await _uow.driverRepository.FindAsync(d => d.DriverID == id);
+                if (driver is null)
+                {
+                    return GenericResult<ReadDriverDTO>.Failure("Driver not found.", Enums
+                        .ErrorType.NotFound);
+                }
+                return GenericResult<ReadDriverDTO>.Success(_mapper.Map<ReadDriverDTO>(driver));
+
+            }
+            catch (Exception ex)
+            {
+                return GenericResult<ReadDriverDTO>
+                    .Failure($"An error occurred while retrieving data from the DB: {ex.Message}", Enums.ErrorType.InternalServerError);
+            }
         }
 
-        public async Task<IEnumerable<DriverDashboardDTO>> GetAllDriversAsync()
+        public async Task<GenericResult<IEnumerable<DriverDashboardDTO>>>
+            GetAllDriversAsync()
         {
-           var drivers = await _repo.GetAllAsync();
-           if(drivers is null || !drivers.Any())
+            try
             {
-                return Enumerable.Empty<DriverDashboardDTO>();
+                var drivers = await _uow.driverRepository.GetAllAsync();
+                if (drivers is null || !drivers.Any())
+                {
+                    return GenericResult<IEnumerable<DriverDashboardDTO>>
+                        .Failure("No drivers found.", Enums.ErrorType.NotFound);
+                }
+                return GenericResult<IEnumerable<DriverDashboardDTO>>.Success
+                     (_mapper.Map<IEnumerable<DriverDashboardDTO>>(drivers));
             }
-              return _mapper.Map<IEnumerable<DriverDashboardDTO>>(drivers);
+            catch (Exception ex)
+            {
+                return GenericResult<IEnumerable<DriverDashboardDTO>>
+                    .Failure($"An error occurred while retrieving data from the DB: {ex.Message}", Enums.ErrorType.InternalServerError);
+            }
         }
 
-        public async Task<bool> DeleteDriverAsync(int id)
+        public async Task<Result> DeleteDriverAsync(int id)
         {
             if(id <= 0)
             {
-                throw new ArgumentOutOfRangeException(nameof(id), "ID must be greater than zero.");
+                return Result.Failure("invalid id", Enums.ErrorType.BadRequest);
             }
-            return await _repo.DeleteAsync(id);
+            try
+            {
+                _uow.driverRepository.Delete(id);
+                var result = await _uow.SaveChangesAsync();
+                if(result)
+                {
+                    return Result.Success;
+                }
+                return Result.Failure("Failed to delete driver", Enums.ErrorType.Conflict);
+            }
+            catch (Exception ex)
+            {
+                return Result.Failure($"An error occurred while saving data to the DB: {ex.Message}"
+                    , Enums.ErrorType.InternalServerError);
+            }
+
         }
     }
 }

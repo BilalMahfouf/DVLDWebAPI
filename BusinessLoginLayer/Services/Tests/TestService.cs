@@ -1,8 +1,10 @@
 ﻿using AutoMapper;
 using Core.Common;
 using Core.DTOs.Test;
+using Core.Interfaces;
 using Core.Interfaces.Repositories.Common;
 using Core.Interfaces.Services.Tests;
+using Core.Shared;
 using DataAccessLayer;
 using System;
 using System.Collections.Generic;
@@ -15,43 +17,91 @@ namespace BusinessLoginLayer.Services.Tests
 {
     public class TestService : ITestService
     {
-        private readonly IRepository<Test> _repo;
+        private readonly IUnitOfWork _uow;
         private readonly IMapper _mapper;
 
-        public TestService(IRepository<Test> repo, IMapper mapper)
+        public TestService(IMapper mapper, IUnitOfWork uow)
         {
-            _repo = repo;
             _mapper = mapper;
+            _uow = uow;
         }
 
-        public async Task<int> CreateTestAsync(TestDTO testDTO)
+        public async Task<GenericResult<int>> CreateTestAsync(TestDTO testDTO)
         {
             if(testDTO is null)
             {
-                throw new ArgumentNullException(nameof(testDTO));
+                return GenericResult<int>.Failure("Test data cannot be null.",
+                    Enums.ErrorType.BadRequest);
             }
-            var newTest = _mapper.Map<Test>(testDTO);
-            var insertedID= await _repo.AddAsync(newTest);
-            return insertedID;
+            try
+            {
+                var newTest = _mapper.Map<Test>(testDTO);
+                _uow.testRepository.Add(newTest);
+                var result = await _uow.SaveChangesAsync();
+                if(result)
+                {
+                    return GenericResult<int>.Success(newTest.TestID);  
+                }
+                return GenericResult<int>.Failure("Failed to create test.",
+                    Enums.ErrorType.Conflict);
+            }
+            catch (Exception ex)
+            {
+                return GenericResult<int>.Failure($"An error occurred while saving data to the DB: {ex.Message}",
+                    Enums.ErrorType.InternalServerError);
+            }
         }
 
-        public async Task<bool> DeleteTestAsync(int id)
+        public async Task<Result> DeleteTestAsync(int id)
         {
            if(id <= 0)
             {
-                throw new ArgumentOutOfRangeException(nameof(id), "ID must be greater than zero.");
+                return Result.Failure("ID must be greater than zero.",
+                    Enums.ErrorType.BadRequest);
             }
-            return await _repo.DeleteAsync(id);
+            try
+            {
+                if(!(await _uow.testRepository.IsExistAsync(t => t.TestID == id)))
+                {
+                    return Result.Failure("Test not found", Enums.ErrorType.NotFound);
+                }
+                _uow.testRepository.Delete(id);
+                var result = await _uow.SaveChangesAsync();
+                if(result)
+                {
+                    return Result.Success;
+                }
+                return Result.Failure("Failed to delete test", Enums.ErrorType.Conflict);
+            }
+            catch (Exception ex)
+            {
+                return Result.Failure($"An error occurred while saving data to the DB: {ex.Message}",
+                    Enums.ErrorType.InternalServerError);
+            }
         }
 
-        public async Task<TestDTO?> FindByIDAsync(int id)
+        public async Task<GenericResult<TestDTO>> FindByIDAsync(int id)
         {
-            if(id <= 0)
+            if (id <= 0)
             {
-                throw new ArgumentOutOfRangeException(nameof(id), "ID must be greater than zero.");
+                               return GenericResult<TestDTO>.Failure("ID must be greater than zero.",
+                    Enums.ErrorType.BadRequest);
             }
-            var test = await _repo.FindByIDAsync(id);
-            return test is null ? null : _mapper.Map<TestDTO>(test);
+            try
+            {
+                var test = await _uow.testRepository.FindAsync(t => t.TestID == id);
+                if(test is null)
+                {
+                    return GenericResult<TestDTO>.Failure("Test not found.",
+                        Enums.ErrorType.NotFound);
+                }
+                return GenericResult<TestDTO>.Success(_mapper.Map<TestDTO>(test));
+            }
+            catch (Exception ex)
+            {
+                return GenericResult<TestDTO>.Failure($"An error occurred while retrieving data from the DB: {ex.Message}",
+                    Enums.ErrorType.InternalServerError);
+            }
         }
 
     }
